@@ -13,13 +13,14 @@
       href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
       rel="stylesheet"
     />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
 
   <body>
     <div class="container">
       <!-- SIDEBAR -->
 
-      <aside class="sidebar">
+      <aside class="sidebar" id="sidebar">
         <div class="logo">
           <h2>Barber<span>Pro</span></h2>
         </div>
@@ -39,9 +40,12 @@
         </nav>
       </aside>
 
+      <div class="overlay" id="overlay"></div>
+
       <!-- CONTEÚDO -->
 
       <main>
+        <button class="menu-mobile" id="menuBtn">☰</button>
         <header class="topbar">
           <div class="search">
             <input type="text" placeholder="Pesquisar cliente..." />
@@ -237,8 +241,31 @@
               </div>
             </div>
           </section>
+
+          <section class="charts">
+            <div class="chart-box">
+              <div class="chart-title">
+                <h2>Faturamento da Semana</h2>
+
+                <span>Últimos 7 dias</span>
+              </div>
+
+              <canvas id="salesChart"></canvas>
+            </div>
+
+            <div class="chart-box">
+              <div class="chart-title">
+                <h2>Agendamentos</h2>
+
+                <span>Essa semana</span>
+              </div>
+
+              <canvas id="appointmentsChart"></canvas>
+            </div>
+          </section>
         </section>
       </main>
     </div>
+    <script src="../js/js/dashboard.js"></script>
   </body>
 </html>
