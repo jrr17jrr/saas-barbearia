@@ -153,6 +153,7 @@
 
     .sidebar{
 
+        
         position:fixed;
 
         top:0;
@@ -180,6 +181,9 @@
     }
 
 
+    .titulosaas{
+        margin-top: 55px;
+    }
 
 
 
