@@ -80,6 +80,8 @@
 
 
 .sidebar{
+    margin-top: 80px;
+
 
     transform:translateX(-100%);
 
@@ -88,6 +90,8 @@
     z-index:1500;
 
 }
+
+
 
 
 
