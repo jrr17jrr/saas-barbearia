@@ -1,0 +1,122 @@
+/* =====================
+      MOBILE MENU
+===================== */
+
+
+.menu-mobile{
+
+    display:none;
+
+    position:fixed;
+
+    top:20px;
+
+    left:20px;
+
+    width:50px;
+
+    height:50px;
+
+    border:none;
+
+    border-radius:14px;
+
+    background:#04a4dc;
+
+    color:white;
+
+    font-size:24px;
+
+    cursor:pointer;
+
+    z-index:2000;
+
+    transition:.3s;
+
+}
+
+
+.menu-mobile:hover{
+
+    transform:scale(1.08);
+
+}
+
+
+
+.overlay{
+
+    display:none;
+
+    position:fixed;
+
+    inset:0;
+
+    background:rgba(0,0,0,.6);
+
+    z-index:998;
+
+}
+
+
+
+/* MOBILE */
+
+
+@media(max-width:768px){
+
+
+
+.menu-mobile{
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+}
+
+
+
+.sidebar{
+
+    transform:translateX(-100%);
+
+    transition:.35s ease;
+
+    z-index:1500;
+
+}
+
+
+
+.sidebar.active{
+
+    transform:translateX(0);
+
+}
+
+
+
+.overlay.active{
+
+    display:block;
+
+}
+
+
+
+.content{
+
+    margin-left:0;
+
+    width:100%;
+
+    padding:80px 20px 20px;
+
+}
+
+
+
+}

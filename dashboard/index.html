@@ -1,271 +1,117 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>Dashboard | Barber SaaS</title>
+<head>
 
-    <link rel="stylesheet" href="dashboard.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  </head>
+    <title>Barber SaaS</title>
 
-  <body>
-    <div class="container">
-      <!-- SIDEBAR -->
+    <link rel="stylesheet" href="dashboard.css">
 
-      <aside class="sidebar" id="sidebar">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+</head>
+
+
+<body>
+
+
+<div class="layout">
+
+
+    <!-- SIDEBAR -->
+
+    <aside class="sidebar">
+
+
         <div class="logo">
-          <h2>Barber<span>Pro</span></h2>
+
+            <h2>
+                Barber<span>SaaS</span>
+            </h2>
+
         </div>
 
-        <nav>
-          <a class="active" href="#">🏠 Dashboard</a>
 
-          <a href="#">📅 Agendamentos</a>
 
-          <a href="#">👥 Clientes</a>
+        <nav class="menu">
 
-          <a href="#">✂️ Serviços</a>
 
-          <a href="#">💈 Barbeiros</a>
+            <a href="#" class="active">
 
-          <a href="#">⚙️ Configurações</a>
+                🏠 Dashboard
+
+            </a>
+
+
+            <a href="#">
+
+                📅 Agendamentos
+
+            </a>
+
+
+            <a href="#">
+
+                ✂️ Serviços
+
+            </a>
+
+
+            <a href="#">
+
+                💰 Lucros
+
+            </a>
+
+
+            <a href="#">
+
+                ⚙️ Configurações
+
+            </a>
+
+
         </nav>
-      </aside>
 
-      <div class="overlay" id="overlay"></div>
 
-      <!-- CONTEÚDO -->
+    </aside>
 
-      <main>
-        <button class="menu-mobile" id="menuBtn">☰</button>
-        <header class="topbar">
-          <div class="search">
-            <input type="text" placeholder="Pesquisar cliente..." />
-          </div>
 
-          <div class="top-actions">
-            <button class="new-btn">+ Novo Agendamento</button>
 
-            <div class="notification">
-              🔔
 
-              <span>3</span>
-            </div>
+    <!-- CONTEUDO -->
 
-            <div class="profile">
-              <img src="https://i.pravatar.cc/100?img=32" />
+    <main class="content">
 
-              <div>
-                <h4>Ricardo</h4>
 
-                <small>Administrador</small>
-              </div>
-            </div>
-          </div>
+        <header>
+
+            <h1>
+                Dashboard
+            </h1>
+
+
         </header>
 
-        <section class="content">
-          <div class="cards">
-            <div class="card">
-              <div class="icon">📅</div>
 
-              <div class="info">
-                <h3>Agendamentos Hoje</h3>
-                <h2>18</h2>
-                <span>+3 em relação a ontem</span>
-              </div>
-            </div>
+    </main>
 
-            <div class="card">
-              <div class="icon">💰</div>
 
-              <div class="info">
-                <h3>Faturamento</h3>
-                <h2>R$ 980</h2>
-                <span>Hoje</span>
-              </div>
-            </div>
 
-            <div class="card">
-              <div class="icon">👥</div>
+</div>
 
-              <div class="info">
-                <h3>Clientes Atendidos</h3>
-                <h2>12</h2>
-                <span>Nesta data</span>
-              </div>
-            </div>
+<script src="dashboard.js"></script>
 
-            <div class="card">
-              <div class="icon">⏰</div>
+</body>
 
-              <div class="info">
-                <h3>Próximo Cliente</h3>
-                <h2>14:30</h2>
-                <span>Lucas Ferreira</span>
-              </div>
-            </div>
-          </div>
-          <!-- Cards entram aqui -->
+<button class="menu-mobile" id="menuBtn">
+    ☰
+</button>
 
-          <section class="agenda">
-            <div class="agenda-header">
-              <h2>Agenda de Hoje</h2>
 
-              <button>Novo Agendamento</button>
-            </div>
+<div class="overlay" id="overlay"></div>
 
-            <table>
-              <thead>
-                <tr>
-                  <th>Horário</th>
-                  <th>Cliente</th>
-                  <th>Serviço</th>
-                  <th>Barbeiro</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                <tr>
-                  <td>09:00</td>
-                  <td>Lucas Ferreira</td>
-                  <td>Corte Degradê</td>
-                  <td>Ricardo</td>
-                  <td><span class="confirmado">Confirmado</span></td>
-                </tr>
-
-                <tr>
-                  <td>10:30</td>
-                  <td>João Pedro</td>
-                  <td>Corte + Barba</td>
-                  <td>Carlos</td>
-                  <td><span class="pendente">Pendente</span></td>
-                </tr>
-
-                <tr>
-                  <td>13:00</td>
-                  <td>Marcos Silva</td>
-                  <td>Barba</td>
-                  <td>Ricardo</td>
-                  <td><span class="cancelado">Cancelado</span></td>
-                </tr>
-
-                <tr>
-                  <td>15:30</td>
-                  <td>Gabriel Souza</td>
-                  <td>Corte Social</td>
-                  <td>Pedro</td>
-                  <td><span class="confirmado">Confirmado</span></td>
-                </tr>
-              </tbody>
-            </table>
-          </section>
-
-          <section class="bottom-grid">
-            <!-- Próximos Clientes -->
-
-            <div class="next-clients">
-              <h2>Próximos Clientes</h2>
-
-              <div class="client">
-                <img src="https://i.pravatar.cc/60?img=12" />
-
-                <div>
-                  <h3>Lucas Ferreira</h3>
-                  <p>14:30 • Corte Degradê</p>
-                </div>
-              </div>
-
-              <div class="client">
-                <img src="https://i.pravatar.cc/60?img=15" />
-
-                <div>
-                  <h3>João Pedro</h3>
-                  <p>15:00 • Corte + Barba</p>
-                </div>
-              </div>
-
-              <div class="client">
-                <img src="https://i.pravatar.cc/60?img=18" />
-
-                <div>
-                  <h3>Marcos Silva</h3>
-                  <p>16:20 • Barba</p>
-                </div>
-              </div>
-
-              <div class="client">
-                <img src="https://i.pravatar.cc/60?img=20" />
-
-                <div>
-                  <h3>Gabriel Souza</h3>
-                  <p>17:10 • Corte Social</p>
-                </div>
-              </div>
-            </div>
-
-            <!-- Financeiro -->
-
-            <div class="finance">
-              <h2>Resumo Financeiro</h2>
-
-              <div class="finance-card">
-                <span>Hoje</span>
-                <h1>R$ 980</h1>
-              </div>
-
-              <div class="finance-info">
-                <div>
-                  <p>Cortes</p>
-                  <strong>16</strong>
-                </div>
-
-                <div>
-                  <p>Barbas</p>
-                  <strong>9</strong>
-                </div>
-
-                <div>
-                  <p>Pacotes</p>
-                  <strong>4</strong>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <section class="charts">
-            <div class="chart-box">
-              <div class="chart-title">
-                <h2>Faturamento da Semana</h2>
-
-                <span>Últimos 7 dias</span>
-              </div>
-
-              <canvas id="salesChart"></canvas>
-            </div>
-
-            <div class="chart-box">
-              <div class="chart-title">
-                <h2>Agendamentos</h2>
-
-                <span>Essa semana</span>
-              </div>
-
-              <canvas id="appointmentsChart"></canvas>
-            </div>
-          </section>
-        </section>
-      </main>
-    </div>
-    <script src="dashboard.js"></script>
-  </body>
 </html>
