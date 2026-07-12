@@ -1,465 +1,233 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
-
-<head>
-
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <title>Barber SaaS</title>
 
-    <link rel="stylesheet" href="dashboard.css">
-    <link rel="stylesheet" href="dashboardmob.css">
+    <link rel="stylesheet" href="dashboard.css" />
+    <link rel="stylesheet" href="dashboardmob.css" />
 
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
 
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <body>
+    <div class="layout">
+      <!-- SIDEBAR -->
 
-</head>
-
-
-<body>
-
-
-<div class="layout">
-
-
-    <!-- SIDEBAR -->
-
-    <aside class="sidebar">
-
-
+      <aside class="sidebar">
         <div class="logo">
-
-            <h2 class="titulosaas">
-                Barber<span>SaaS</span>
-            </h2>
-
+          <h2 class="titulosaas">Barber<span>SaaS</span></h2>
         </div>
-
-
 
         <nav class="menu">
+          <a href="#" class="active"> 🏠 Dashboard </a>
 
+          <a href="#"> 📅 Agendamentos </a>
 
-            <a href="#" class="active">
+          <a href="#"> ✂️ Serviços </a>
 
-                🏠 Dashboard
+          <a href="#"> 💰 Lucros </a>
 
-            </a>
+          <a href="/link-agendamento/index.html"> 🔗 Meu Link </a>
 
-
-            <a href="#">
-
-                📅 Agendamentos
-
-            </a>
-
-
-            <a href="#">
-
-                ✂️ Serviços
-
-            </a>
-
-
-            <a href="#">
-
-                💰 Lucros
-
-            </a>
-
-
-            <a href="#">
-
-                ⚙️ Configurações
-
-            </a>
-
-
+          <a href="#"> ⚙️ Configurações </a>
         </nav>
+      </aside>
 
+      <!-- CONTEUDO -->
 
-    </aside>
+      <main class="content">
+        <header class="topbar">
+          <div>
+            <h1>Dashboard</h1>
 
+            <p>Olá, Ricardo 👋 Tenha uma visão geral da sua barbearia</p>
+          </div>
 
+          <button class="new-btn">+ Novo Agendamento</button>
+        </header>
 
+        <!-- CARDS -->
 
-    <!-- CONTEUDO -->
+        <section class="cards">
+          <div class="card">
+            <div class="icon">📅</div>
 
- <main class="content">
+            <div>
+              <span>Agendamentos Hoje</span>
 
+              <h2>18</h2>
 
-<header class="topbar">
+              <small>+3 comparado a ontem</small>
+            </div>
+          </div>
 
+          <div class="card">
+            <div class="icon">💰</div>
 
-    <div>
-        <h1>Dashboard</h1>
+            <div>
+              <span>Faturamento</span>
 
-        <p>
-            Olá, Ricardo 👋 Tenha uma visão geral da sua barbearia
-        </p>
+              <h2>R$ 980</h2>
+
+              <small>Hoje</small>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="icon">👥</div>
+
+            <div>
+              <span>Clientes</span>
+
+              <h2>35</h2>
+
+              <small>Esse mês</small>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="icon">✂️</div>
+
+            <div>
+              <span>Serviços</span>
+
+              <h2>42</h2>
+
+              <small>Realizados</small>
+            </div>
+          </div>
+        </section>
+
+        <!-- AGENDA -->
+
+        <section class="agenda">
+          <div class="section-title">
+            <h2>Agenda de Hoje</h2>
+
+            <button>Ver todos</button>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Horário</th>
+
+                <th>Cliente</th>
+
+                <th>Serviço</th>
+
+                <th>Barbeiro</th>
+
+                <th>Status</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <tr>
+                <td>09:00</td>
+
+                <td>João Pedro</td>
+
+                <td>Corte Degradê</td>
+
+                <td>Ricardo</td>
+
+                <td>
+                  <span class="status confirmado"> Confirmado </span>
+                </td>
+              </tr>
+
+              <tr>
+                <td>10:30</td>
+
+                <td>Lucas Silva</td>
+
+                <td>Corte + Barba</td>
+
+                <td>Carlos</td>
+
+                <td>
+                  <span class="status pendente"> Pendente </span>
+                </td>
+              </tr>
+
+              <tr>
+                <td>14:00</td>
+
+                <td>Marcos</td>
+
+                <td>Barba</td>
+
+                <td>Ricardo</td>
+
+                <td>
+                  <span class="status confirmado"> Confirmado </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="bottom">
+          <div class="clients">
+            <h2>Próximos Clientes</h2>
+
+            <div class="client">
+              <div class="avatar">👤</div>
+
+              <div>
+                <h3>Pedro Santos</h3>
+
+                <p>15:30 • Corte</p>
+              </div>
+            </div>
+
+            <div class="client">
+              <div class="avatar">👤</div>
+
+              <div>
+                <h3>Gabriel Souza</h3>
+
+                <p>16:30 • Barba</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="finance">
+            <h2>Resumo Financeiro</h2>
+
+            <div class="money">
+              <span> Hoje </span>
+
+              <h1>R$980</h1>
+            </div>
+
+            <div class="finance-item">
+              <p>Semana</p>
+
+              <strong> R$4.500 </strong>
+            </div>
+
+            <div class="finance-item">
+              <p>Mês</p>
+
+              <strong> R$18.900 </strong>
+            </div>
+          </div>
+        </section>
+      </main>
     </div>
 
+    <button class="menu-mobile" id="menuBtn">☰</button>
 
-    <button class="new-btn">
-        + Novo Agendamento
-    </button>
+    <script src="dashboard.js"></script>
+  </body>
 
-
-</header>
-
-
-
-
-
-<!-- CARDS -->
-
-<section class="cards">
-
-
-    <div class="card">
-
-        <div class="icon">
-            📅
-        </div>
-
-        <div>
-            <span>Agendamentos Hoje</span>
-
-            <h2>18</h2>
-
-            <small>+3 comparado a ontem</small>
-        </div>
-
-    </div>
-
-
-
-    <div class="card">
-
-        <div class="icon">
-            💰
-        </div>
-
-        <div>
-            <span>Faturamento</span>
-
-            <h2>R$ 980</h2>
-
-            <small>Hoje</small>
-        </div>
-
-    </div>
-
-
-
-    <div class="card">
-
-        <div class="icon">
-            👥
-        </div>
-
-        <div>
-            <span>Clientes</span>
-
-            <h2>35</h2>
-
-            <small>Esse mês</small>
-        </div>
-
-    </div>
-
-
-
-    <div class="card">
-
-        <div class="icon">
-            ✂️
-        </div>
-
-        <div>
-            <span>Serviços</span>
-
-            <h2>42</h2>
-
-            <small>Realizados</small>
-        </div>
-
-    </div>
-
-
-</section>
-
-
-
-
-
-
-<!-- AGENDA -->
-
-
-<section class="agenda">
-
-
-<div class="section-title">
-
-<h2>
-Agenda de Hoje
-</h2>
-
-
-<button>
-Ver todos
-</button>
-
-
-</div>
-
-
-
-<table>
-
-
-<thead>
-
-<tr>
-
-<th>Horário</th>
-
-<th>Cliente</th>
-
-<th>Serviço</th>
-
-<th>Barbeiro</th>
-
-<th>Status</th>
-
-</tr>
-
-
-</thead>
-
-
-
-<tbody>
-
-
-<tr>
-
-<td>09:00</td>
-
-<td>João Pedro</td>
-
-<td>Corte Degradê</td>
-
-<td>Ricardo</td>
-
-<td>
-<span class="status confirmado">
-Confirmado
-</span>
-</td>
-
-</tr>
-
-
-
-<tr>
-
-<td>10:30</td>
-
-<td>Lucas Silva</td>
-
-<td>Corte + Barba</td>
-
-<td>Carlos</td>
-
-<td>
-<span class="status pendente">
-Pendente
-</span>
-</td>
-
-</tr>
-
-
-
-<tr>
-
-<td>14:00</td>
-
-<td>Marcos</td>
-
-<td>Barba</td>
-
-<td>Ricardo</td>
-
-<td>
-<span class="status confirmado">
-Confirmado
-</span>
-</td>
-
-</tr>
-
-
-
-</tbody>
-
-
-</table>
-
-
-
-</section>
-
-
-
-
-
-
-
-<section class="bottom">
-
-
-<div class="clients">
-
-
-<h2>
-Próximos Clientes
-</h2>
-
-
-
-<div class="client">
-
-<div class="avatar">
-👤
-</div>
-
-<div>
-
-<h3>
-Pedro Santos
-</h3>
-
-<p>
-15:30 • Corte
-</p>
-
-</div>
-
-
-</div>
-
-
-
-
-<div class="client">
-
-<div class="avatar">
-👤
-</div>
-
-<div>
-
-<h3>
-Gabriel Souza
-</h3>
-
-<p>
-16:30 • Barba
-</p>
-
-</div>
-
-
-</div>
-
-
-
-</div>
-
-
-
-
-
-
-
-<div class="finance">
-
-
-<h2>
-Resumo Financeiro
-</h2>
-
-
-
-<div class="money">
-
-<span>
-Hoje
-</span>
-
-<h1>
-R$980
-</h1>
-
-</div>
-
-
-
-<div class="finance-item">
-
-<p>
-Semana
-</p>
-
-<strong>
-R$4.500
-</strong>
-
-</div>
-
-
-<div class="finance-item">
-
-<p>
-Mês
-</p>
-
-<strong>
-R$18.900
-</strong>
-
-</div>
-
-
-
-</div>
-
-
-</section>
-
-
-
-</main>
-
-
-
-</div>
-
-<button class="menu-mobile" id="menuBtn">
-    ☰
-</button>
-
-<script src="dashboard.js"></script>
-
-</body>
-
-
-
-
-<div class="overlay" id="overlay"></div>
-
+  <div class="overlay" id="overlay"></div>
 </html>
