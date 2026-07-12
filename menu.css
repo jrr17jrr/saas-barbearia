@@ -1,0 +1,306 @@
+/* =========================
+        RESET
+========================= */
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
+
+
+html,body{
+
+    width:100%;
+    overflow-x:hidden;
+
+}
+
+
+body{
+
+    background:#0f172a;
+    color:white;
+
+}
+
+
+
+/* =========================
+        LAYOUT
+========================= */
+
+
+.layout{
+
+    display:flex;
+
+    min-height:100vh;
+
+}
+
+
+
+/* =========================
+        SIDEBAR
+========================= */
+
+
+.sidebar{
+
+
+
+    width:260px;
+
+    height:100vh;
+
+    background:#111827;
+
+    padding:30px 20px;
+
+    position:fixed;
+
+    left:0;
+
+    top:0;
+
+    z-index:1000;
+
+}
+
+
+
+.logo{
+
+    margin-bottom:50px;
+
+}
+
+
+
+.logo h2{
+
+    font-size:26px;
+
+}
+
+
+.logo span{
+
+    color:#04a4dc;
+
+}
+
+
+
+
+/* MENU */
+
+
+.menu{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:12px;
+
+}
+
+
+
+.menu a{
+
+    text-decoration:none;
+
+    color:#cbd5e1;
+
+    padding:15px;
+
+    border-radius:12px;
+
+    display:flex;
+
+    align-items:center;
+
+    gap:10px;
+
+    transition:.3s;
+
+}
+
+
+
+.menu a:hover{
+
+    background:#1e293b;
+
+    color:white;
+
+}
+
+
+
+.menu .active{
+
+    background:#04a4dc;
+
+    color:white;
+
+}
+
+
+
+
+/* =========================
+        BOTÃO MOBILE
+========================= */
+
+
+.menu-mobile{
+
+    display:none;
+
+    position:fixed;
+
+    top:20px;
+
+    left:20px;
+
+    width:50px;
+
+    height:50px;
+
+    border:none;
+
+    border-radius:14px;
+
+    background:#04a4dc;
+
+    color:white;
+
+    font-size:24px;
+
+    cursor:pointer;
+
+    z-index:2000;
+
+    transition:.3s;
+
+}
+
+
+
+.menu-mobile:hover{
+
+    transform:scale(1.08);
+
+}
+
+
+
+
+/* OVERLAY */
+
+
+.overlay{
+
+    display:none;
+
+    position:fixed;
+
+    inset:0;
+
+    background:rgba(0,0,0,.6);
+
+    z-index:900;
+
+}
+
+
+
+
+
+/* ÁREA DO CONTEÚDO */
+
+.content{
+
+    margin-left:260px;
+
+    width:calc(100% - 260px);
+
+    padding:35px;
+
+}
+
+
+
+
+
+
+/* =========================
+        MOBILE
+========================= */
+
+
+@media(max-width:768px){
+
+
+    .menu-mobile{
+
+        display:flex;
+
+        align-items:center;
+
+        justify-content:center;
+
+    }
+
+
+
+    .sidebar{
+
+        transform:translateX(-100%);
+
+        transition:.35s ease;
+
+    }
+
+    .logo h2{
+
+    margin-top: 55px;
+    font-size:26px;
+
+}
+
+
+
+    .sidebar.active{
+
+        transform:translateX(0);
+
+    }
+
+
+
+    .overlay.active{
+
+        display:block;
+
+    }
+
+
+
+    .content{
+
+        margin-left:0;
+
+        width:100%;
+
+        padding:80px 20px 20px;
+
+    }
+
+
+}
