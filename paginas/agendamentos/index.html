@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Agendamentos | BarberSaaS</title>
+
+    <link rel="stylesheet" href="agendamentos.css" />
+
+    <link rel="stylesheet" href="/menu.css" />
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+
+  <body>
+    <div class="layout">
+      <!-- MENU -->
+
+      <aside class="sidebar">
+        <div class="logo">
+          <h2>Barber<span>SaaS</span></h2>
+        </div>
+
+        <nav class="menu">
+          <a href="/dashboard/index.html"> 🏠 Dashboard </a>
+
+          <a href="#" class="active"> 📅 Agendamentos </a>
+
+          <!-- <a href="#"> 👥 Clientes </a> -->
+
+          <a href="#"> 💰 Lucros </a>
+
+          <a href="#"> 🔗 Meu Link </a>
+
+          <a href="/editar-link/index.html"> ✏️ Editar Meu Link </a>
+
+          <a href="#"> ⚙️ Configurações </a>
+        </nav>
+      </aside>
+
+      <!-- BOTÃO MOBILE -->
+
+      <button class="menu-mobile" id="menuBtn">☰</button>
+
+      <div class="overlay" id="overlay"></div>
+
+      <!-- CONTEÚDO -->
+
+      <main class="content">
+        <header class="topbar">
+          <div>
+            <h1>Agendamentos</h1>
+
+            <p>Gerencie os horários da sua barbearia</p>
+          </div>
+
+          <button class="new-btn">+ Novo Agendamento</button>
+        </header>
+
+        <!-- CARDS -->
+
+        <section class="cards">
+          <div class="card">
+            <h3>Hoje</h3>
+
+            <h2>18</h2>
+
+            <p>Agendamentos</p>
+          </div>
+
+          <div class="card">
+            <h3>Confirmados</h3>
+
+            <h2>14</h2>
+
+            <p>Clientes confirmados</p>
+          </div>
+
+          <div class="card">
+            <h3>Pendentes</h3>
+
+            <h2>3</h2>
+
+            <p>Aguardando confirmação</p>
+          </div>
+
+          <div class="card">
+            <h3>Cancelados</h3>
+
+            <h2>1</h2>
+
+            <p>Hoje</p>
+          </div>
+        </section>
+
+        <!-- AGENDA -->
+
+        <section class="agenda-box">
+          <div class="title">
+            <div>
+              <h2>Agenda de Hoje</h2>
+
+              <p>Gerencie os horários marcados</p>
+            </div>
+
+            <button class="new-btn">+ Novo Agendamento</button>
+          </div>
+
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Horário</th>
+
+                  <th>Cliente</th>
+
+                  <th>Serviço</th>
+
+                  <th>Barbeiro</th>
+
+                  <th>Status</th>
+
+                  <th>Ação</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                <tr>
+                  <td>08:30</td>
+
+                  <td>João Silva</td>
+
+                  <td>Corte Disfarçado</td>
+
+                  <td>Ricardo</td>
+
+                  <td>
+                    <span class="confirmado"> Confirmado </span>
+                  </td>
+
+                  <td>
+                    <button class="action-btn">Ver</button>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>10:00</td>
+
+                  <td>Carlos Eduardo</td>
+
+                  <td>Corte + Barba</td>
+
+                  <td>Pedro</td>
+
+                  <td>
+                    <span class="pendente"> Pendente </span>
+                  </td>
+
+                  <td>
+                    <button class="action-btn">Ver</button>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>14:30</td>
+
+                  <td>Lucas Ferreira</td>
+
+                  <td>Barba</td>
+
+                  <td>Ricardo</td>
+
+                  <td>
+                    <span class="cancelado"> Cancelado </span>
+                  </td>
+
+                  <td>
+                    <button class="action-btn">Ver</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script>
+      const menuBtn = document.getElementById("menuBtn");
+
+      const sidebar = document.querySelector(".sidebar");
+
+      const overlay = document.getElementById("overlay");
+
+      menuBtn.onclick = () => {
+        sidebar.classList.toggle("active");
+
+        overlay.classList.toggle("active");
+      };
+
+      overlay.onclick = () => {
+        sidebar.classList.remove("active");
+
+        overlay.classList.remove("active");
+      };
+    </script>
+  </body>
+</html>
