@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const savedSite=JSON.parse(localStorage.getItem("barberSite")||"null");
   if(savedSite){
     const colors=savedSite.colors||{primary:"#08a9df",background:"#0b1220",card:"#131e31"};
-    const light=isLightColor(colors.background);document.documentElement.style.setProperty("--site-primary",colors.primary);document.documentElement.style.setProperty("--site-bg",colors.background);document.documentElement.style.setProperty("--site-card",colors.card);document.documentElement.style.setProperty("--site-text",light?"#111827":"#ffffff");document.documentElement.style.setProperty("--site-muted",light?"#64748b":"#8190a5");document.documentElement.style.setProperty("--site-surface",light?"#f1f5f9":"#0d1728");document.documentElement.style.setProperty("--site-border",light?"#dbe3ee":"#223149");
+    const light=isLightColor(colors.background),primaryLight=isLightColor(colors.primary);document.documentElement.style.setProperty("--site-primary",colors.primary);document.documentElement.style.setProperty("--site-primary-text",primaryLight?"#111827":"#ffffff");document.documentElement.style.setProperty("--site-bg",colors.background);document.documentElement.style.setProperty("--site-card",colors.card);document.documentElement.style.setProperty("--site-text",light?"#111827":"#ffffff");document.documentElement.style.setProperty("--site-muted",light?"#64748b":"#8190a5");document.documentElement.style.setProperty("--site-surface",light?"#f1f5f9":"#0d1728");document.documentElement.style.setProperty("--site-border",light?"#dbe3ee":"#223149");
     const title=document.querySelector(".container > h1"); if(title) title.textContent=savedSite.name||"Barbearia Vision";
     const logo=document.querySelector(".container > .logo"); if(logo&&savedSite.logo) logo.src=savedSite.logo;
     const status=document.querySelector(".status"); if(status) status.lastChild.textContent=" "+(savedSite.status||"Aberto agora");
@@ -26,7 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
     <div class="booking-overlay" id="bookingOverlay">
       <div class="booking-modal">
         <div class="booking-handle"></div>
-        <div class="booking-header"><div><small>Barbearia Vision</small><h2>Agendar horário</h2></div><button class="booking-close" aria-label="Fechar">×</button></div>
+        <div class="booking-header"><div><small>${savedSite?.name||"Barbearia Vision"}</small><h2>Agendar horário</h2></div><button class="booking-close" aria-label="Fechar">×</button></div>
         <div class="booking-progress"><span></span><span></span><span></span><span></span></div>
         <div id="bookingContent"></div>
       </div>
@@ -95,4 +95,29 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelector(".booking-close").onclick=close;
   overlay.addEventListener("click",e=>{if(e.target===overlay)close();});
   document.addEventListener("keydown",e=>{if(e.key==="Escape")close();});
+
+  // Chatbot: protótipo front-end, sem banco.
+  const botCfg=savedSite?.chatbot||{enabled:true,name:"Assistente Barber",greeting:"Olá! Vou te ajudar a agendar seu horário."};
+  if(botCfg.enabled!==false){
+    document.body.insertAdjacentHTML("beforeend",`
+      <button class="chatbot-launch" id="chatbotLaunch">Conversar e agendar</button>
+      <section class="chatbot-panel" id="chatbotPanel">
+        <div class="chatbot-head"><div><b>${botCfg.name||"Assistente Barber"}</b><small>Agendamento online</small></div><button id="chatbotClose">×</button></div>
+        <div class="chatbot-messages" id="chatMessages"></div>
+        <div class="chat-options" id="chatOptions"></div>
+        <div class="chat-inputbar hidden" id="chatInputbar"><input id="chatInput" autocomplete="off"><button id="chatSend">Enviar</button></div>
+      </section>`);
+    const panel=document.getElementById("chatbotPanel"),msgs=document.getElementById("chatMessages"),opts=document.getElementById("chatOptions"),bar=document.getElementById("chatInputbar"),input=document.getElementById("chatInput");
+    let chat={step:"name",name:"",phone:"",service:null,date:null,time:null};
+    const say=(txt,user=false)=>{msgs.insertAdjacentHTML("beforeend",`<div class="chat-msg ${user?"user":""}">${txt}</div>`);msgs.scrollTop=msgs.scrollHeight};
+    const askInput=(placeholder,cb)=>{opts.innerHTML="";bar.classList.remove("hidden");input.placeholder=placeholder;input.value="";input.focus();const send=()=>{const v=input.value.trim();if(!v)return;say(v,true);bar.classList.add("hidden");cb(v)};document.getElementById("chatSend").onclick=send;input.onkeydown=e=>{if(e.key==="Enter")send()}};
+    const choose=(items,cb)=>{bar.classList.add("hidden");opts.innerHTML=items.map((x,i)=>`<button data-i="${i}">${x.label}</button>`).join("");opts.querySelectorAll("button").forEach(b=>b.onclick=()=>{const x=items[+b.dataset.i];say(x.label,true);opts.innerHTML="";cb(x.value)})};
+    function startChat(){msgs.innerHTML="";opts.innerHTML="";chat={};say(botCfg.greeting||"Olá! Vou te ajudar a agendar seu horário.");setTimeout(()=>{say("Qual é o seu nome?");askInput("Digite seu nome",v=>{chat.name=v;say(`Prazer, ${v}! Qual é o seu WhatsApp com DDD?`);askInput("(21) 99999-9999",v2=>{chat.phone=v2;chatService()})})},250)}
+    function chatService(){say("Qual serviço você quer agendar?");choose(services.map(s=>({label:`${s.name} — ${s.price} · ${s.duration}`,value:s})),s=>{chat.service=s;chatDate()})}
+    function chatDate(){say("Escolha o dia.");const arr=[];let d=new Date();for(let i=0;i<7;i++){const x=new Date(d);x.setDate(d.getDate()+i);if(x.getDay()!==0)arr.push({label:`${i===0?"Hoje":labels[x.getDay()]} · ${String(x.getDate()).padStart(2,"0")}/${String(x.getMonth()+1).padStart(2,"0")}`,value:{key:x.toISOString().slice(0,10),label:i===0?"Hoje":labels[x.getDay()]+" "+x.getDate()}})}choose(arr,v=>{chat.date=v;chatTime()})}
+    function chatTime(){say("Qual horário fica melhor?");choose(times.filter((_,i)=>i!==3&&i!==8).map(t=>({label:t,value:t})),t=>{chat.time=t;chatReview()})}
+    function chatReview(){say(`Confira: <b>${chat.service.name}</b><br>${chat.date.label} às ${chat.time}<br>${chat.name} · ${chat.phone}`);choose([{label:"Confirmar agendamento",value:true},{label:"Começar novamente",value:false}],ok=>{if(ok){say("Agendamento confirmado nesta prévia ✓");say("Quando conectarmos o Supabase, é aqui que ele será salvo na agenda.");opts.innerHTML='<button id="chatAgain">Fazer outro agendamento</button>';document.getElementById("chatAgain").onclick=startChat}else startChat()})}
+    document.getElementById("chatbotLaunch").onclick=()=>{panel.classList.add("open");if(!msgs.children.length)startChat()};
+    document.getElementById("chatbotClose").onclick=()=>panel.classList.remove("open");
+  }
 });
