@@ -23,7 +23,8 @@ document.querySelectorAll(".theme-option").forEach(btn=>btn.onclick=()=>{theme=b
 $("name").oninput=render;$("greeting").oninput=render;
 $("copy").onclick=async()=>{await navigator.clipboard.writeText(location.origin+"/chatbot/?loja="+ctx.shop.slug);$("state").textContent="Link copiado.";};
 $("save").onclick=async()=>{
-if(ctx.shop.plan==="site"){$("state").textContent="Seu plano não inclui chatbot.";return;}\nconst payload={barbershop_id:ctx.shop.id,chatbot_enabled:$("enabled").checked,chatbot_name:$("name").value.trim()||"Assistente",chatbot_greeting:$("greeting").value.trim(),chatbot_sync_with_site:$("syncWithSite").checked,chatbot_theme:theme};
+if(ctx.shop.plan==="site"){$("state").textContent="Seu plano não inclui chatbot.";return;}
+const payload={barbershop_id:ctx.shop.id,chatbot_enabled:$("enabled").checked,chatbot_name:$("name").value.trim()||"Assistente",chatbot_greeting:$("greeting").value.trim(),chatbot_sync_with_site:$("syncWithSite").checked,chatbot_theme:theme};
 const {error:saveError}=await supabase.from("barbershop_settings").upsert(payload,{onConflict:"barbershop_id"});
 $("state").textContent=saveError?saveError.message:"Configurações salvas.";
 };
