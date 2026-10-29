@@ -1,10 +1,13 @@
 document.addEventListener("DOMContentLoaded", () => {
   const savedSite=JSON.parse(localStorage.getItem("barberSite")||"null");
   if(savedSite){
+    const colors=savedSite.colors||{primary:"#08a9df",background:"#0b1220",card:"#131e31"};
+    document.documentElement.style.setProperty("--site-primary",colors.primary);document.documentElement.style.setProperty("--site-bg",colors.background);document.documentElement.style.setProperty("--site-card",colors.card);
     const title=document.querySelector(".container > h1"); if(title) title.textContent=savedSite.name||"Barbearia Vision";
     const logo=document.querySelector(".container > .logo"); if(logo&&savedSite.logo) logo.src=savedSite.logo;
     const status=document.querySelector(".status"); if(status) status.lastChild.textContent=" "+(savedSite.status||"Aberto agora");
     const info=document.querySelectorAll(".info-card b"); if(info[1]&&savedSite.address) info[1].textContent=savedSite.address;
+    const social=document.querySelector(".social");if(social){const links=[{key:"instagram",enabled:savedSite.instagramEnabled!==false,value:savedSite.instagram},{key:"whatsapp",enabled:savedSite.whatsappEnabled!==false,value:savedSite.whatsapp},{key:"facebook",enabled:!!savedSite.facebookEnabled,value:savedSite.facebook},{key:"tiktok",enabled:savedSite.tiktokEnabled!==false,value:savedSite.tiktok}];[...social.children].forEach((a,i)=>{const s=links[i];if(!s?.enabled){a.style.display="none";return;}a.style.display="grid";if(s.value){let href=s.value;if(s.key==="whatsapp")href="https://wa.me/55"+s.value.replace(/\D/g,"");else if(!/^https?:/i.test(href)){if(s.key==="instagram")href="https://instagram.com/"+href.replace("@","");if(s.key==="tiktok")href="https://tiktok.com/@"+href.replace("@","");}a.href=href;a.target="_blank";}})}
     const section=document.querySelector(".services"); if(section&&savedSite.services?.length){section.innerHTML=`<h2>Serviços</h2>`+savedSite.services.map(s=>`<div class="service-card"><img src="${s.image||"/img/disfarcado.jpg"}" alt="${s.name}"><div class="service-info"><h3>${s.name}</h3><p>${s.description||""}</p><div class="details"><span>${s.duration} min</span><span>R$ ${s.price}</span></div><a href="#" class="schedule-btn">Agendar</a></div></div>`).join("");}
   }
   const services = [...document.querySelectorAll(".service-card")].map((card, index) => {
