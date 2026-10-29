@@ -61,3 +61,20 @@ document.getElementById("manageSave").onclick=async()=>{
 const originalLoad=load;
 load=async function(){await originalLoad();fillManage();};
 fillManage();
+
+const ownerPanel=document.createElement("section");
+ownerPanel.className="formbox open";
+ownerPanel.innerHTML='<h2>Criar acesso do proprietário</h2><select id="ownerShop"></select><input id="ownerFullName" placeholder="Nome do proprietário" autocomplete="name"><input id="ownerEmail" placeholder="E-mail de acesso" type="email" autocomplete="off"><input id="ownerPassword" placeholder="Senha inicial (mínimo 10 caracteres)" type="password" autocomplete="new-password"><button id="createOwner" class="primary full">Criar conta</button><p class="full" id="ownerFeedback" role="status"></p>';
+document.querySelector(".wrap").append(ownerPanel);
+function fillOwnerShops(){const el=document.getElementById("ownerShop"),previous=el.value;el.replaceChildren();for(const s of shops){const option=document.createElement("option");option.value=s.id;option.textContent=s.name;el.append(option);}if(shops.some(s=>s.id===previous))el.value=previous;}
+document.getElementById("createOwner").onclick=async()=>{
+const button=document.getElementById("createOwner"),feedback=document.getElementById("ownerFeedback");
+button.disabled=true;feedback.textContent="Criando conta...";
+const {data,error}=await supabase.functions.invoke("create-barbershop-owner",{body:{action:"create_owner",barbershop_id:document.getElementById("ownerShop").value,name:document.getElementById("ownerFullName").value,email:document.getElementById("ownerEmail").value,password:document.getElementById("ownerPassword").value}});
+button.disabled=false;
+feedback.textContent=error?(data?.error||error.message):(data?.error||"Conta criada. Envie o e-mail e a senha inicial ao proprietário por um canal seguro.");
+if(!error&&!data?.error)document.getElementById("ownerPassword").value="";
+};
+const previousLoad=load;
+load=async function(){await previousLoad();fillOwnerShops();};
+fillOwnerShops();
