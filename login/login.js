@@ -7,7 +7,8 @@ async function enter(user){
  const isAdmin=await platformAdmin(user);
  window.location.assign(isAdmin?"/dev/":"/dashboard/");
 }
-form.addEventListener("submit",async event=>{\n if(location.hash.includes("type=recovery")||new URLSearchParams(location.search).get("type")==="recovery")return;
+form.addEventListener("submit",async event=>{
+ if(location.hash.includes("type=recovery")||new URLSearchParams(location.search).get("type")==="recovery"){event.preventDefault();return;}
  event.preventDefault();
  const button=document.getElementById("submit");
  button.disabled=true;
