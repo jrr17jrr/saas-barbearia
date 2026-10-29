@@ -11,6 +11,11 @@ for(const [id,key] of Object.entries(fields))if($(id))$(id).value=shop[key]||"";
 const themes={cyan:["#08a9df","#0b1220","#131e31"],gold:["#d6a83b","#0c0c0d","#191919"],light:["#2563eb","#f5f7fa","#ffffff"],red:["#e63946","#0b0b0d","#19191d"]};
 let selected=shop.theme||"cyan";
 for(const btn of document.querySelectorAll(".theme-option"))btn.onclick=()=>{selected=btn.dataset.theme;document.querySelectorAll(".theme-option").forEach(x=>x.classList.toggle("active",x===btn));};
+const updatePreview=()=>{if($("previewName"))$("previewName").textContent=$("shopName")?.value||ctx.shop.name;if($("previewStatus"))$("previewStatus").textContent=$("shopStatus")?.value||"";};
+$("shopName")?.addEventListener("input",updatePreview);$("shopStatus")?.addEventListener("input",updatePreview);updatePreview();
+if($("logoInput")){$("logoInput").disabled=true;$("logoInput").title="Envio de logo será habilitado após configuração do armazenamento.";}
+if($("newService"))$("newService").onclick=()=>location.assign("/servicos/");
+if($("serviceList")){$("serviceList").textContent="Gerencie serviços na seção Serviços do painel.";}
 const original=$("saveBtn").cloneNode(true);$("saveBtn").replaceWith(original);
 original.onclick=async()=>{
 if(ctx.shop.plan==="chatbot"){$("saveState").textContent="Seu plano não inclui site.";return;}
