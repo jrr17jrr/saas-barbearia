@@ -7,7 +7,7 @@ async function enter(user){
  const isAdmin=await platformAdmin(user);
  window.location.assign(isAdmin?"/dev/":"/dashboard/");
 }
-form.addEventListener("submit",async event=>{
+form.addEventListener("submit",async event=>{\n if(location.hash.includes("type=recovery")||new URLSearchParams(location.search).get("type")==="recovery")return;
  event.preventDefault();
  const button=document.getElementById("submit");
  button.disabled=true;
@@ -28,7 +28,7 @@ document.getElementById("first").addEventListener("click",()=>{
 if(location.hash.includes("type=recovery")||new URLSearchParams(location.search).get("type")==="recovery"){
  document.getElementById("subtitle").textContent="Defina uma nova senha para sua conta.";
  document.getElementById("submit").textContent="Atualizar senha";
- email.required=false;email.closest("label")?.remove();
+ email.required=false;email.style.display="none";
  form.onsubmit=async event=>{
  event.preventDefault();if(password.value.length<10){msg.textContent="Use uma senha com pelo menos 10 caracteres.";return;}
  const {error}=await supabase.auth.updateUser({password:password.value});
