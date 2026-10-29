@@ -4,7 +4,7 @@ const ctx=await ownerContext();
 if(ctx){
  const start=new Date();start.setHours(0,0,0,0);
  const end=new Date(start);end.setDate(end.getDate()+1);
- const month=new Date(start.getFullYear(),start.getMonth(),1);\n
+ const month=new Date(start.getFullYear(),start.getMonth(),1);\n const week=new Date(start);week.setDate(start.getDate()-((start.getDay()+6)%7));\n
  const [appointments,clients]=await Promise.all([
  supabase.from("appointments").select("client_name,starts_at,status,price,services(name)").eq("barbershop_id",ctx.shop.id).gte("starts_at",(week<month?week:month).toISOString()).order("starts_at"),
  supabase.from("clients").select("id").eq("barbershop_id",ctx.shop.id)
