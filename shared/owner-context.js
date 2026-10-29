@@ -9,7 +9,7 @@ export async function ownerContext(){
   document.body.textContent="Conta sem barbearia vinculada. Contate o administrador.";
   return null;
  }
- const {data:shop,error:shopError}=await supabase.from("barbershops").select("id,name,status,plan").eq("id",data.barbershop_id).single();
+ const {data:shop,error:shopError}=await supabase.from("barbershops").select("id,name,slug,status,plan").eq("id",data.barbershop_id).single();
  if(shopError)throw shopError;
  if(shop.status==="suspended"||shop.status==="cancelled"){
   document.body.textContent="Acesso suspenso. Contate o administrador.";
