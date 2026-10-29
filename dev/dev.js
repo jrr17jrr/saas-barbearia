@@ -2,6 +2,7 @@ import {supabase,currentUser,platformAdmin} from "../shared/supabase-client.js";
 const $=id=>document.getElementById(id);let shops=[];
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const user=await currentUser();
+if(!user)location.replace("/login/");
 if(user){
  if(!await platformAdmin(user)){location.replace("/dashboard/");}
  else {await load();}
