@@ -34,3 +34,30 @@ $("shops").onclick=async e=>{
  const {error}=await supabase.from("barbershops").update({status}).eq("id",shop.id);
  if(error)alert(error.message);else await load();
 };
+
+const panel=document.createElement("section");panel.className="formbox open";panel.innerHTML='<h2>Gerenciar barbearia</h2><select id="manageShop"></select><input id="manageName" placeholder="Nome"><input id="manageOwner" placeholder="Responsável"><input id="managePhone" placeholder="WhatsApp"><select id="managePlan"><option value="site">Site</option><option value="chatbot">Chatbot</option><option value="complete">Completo</option></select><button id="manageSave" class="primary full">Salvar alterações</button><p id="manageResult" class="full"></p>';
+document.querySelector(".wrap").append(panel);
+function fillManage(){
+ const select=document.getElementById("manageShop");const selected=select.value;
+ select.replaceChildren();for(const s of shops){const opt=document.createElement("option");opt.value=s.id;opt.textContent=s.name;select.append(opt);}
+ if(shops.some(s=>s.id===selected))select.value=selected;
+ const s=shops.find(x=>x.id===select.value);if(!s)return;
+ document.getElementById("manageName").value=s.name||"";
+ document.getElementById("manageOwner").value=s.owner_name||"";
+ document.getElementById("managePhone").value=s.phone||"";
+ document.getElementById("managePlan").value=s.plan;
+}
+document.getElementById("manageShop").onchange=fillManage;
+document.getElementById("manageSave").onclick=async()=>{
+ const id=document.getElementById("manageShop").value;
+ if(!id)return;
+ const name=document.getElementById("manageName").value.trim();
+ if(!name){document.getElementById("manageResult").textContent="Informe o nome.";return;}
+ const phone=document.getElementById("managePhone").value.trim();
+ const {error}=await supabase.from("barbershops").update({name,owner_name:document.getElementById("manageOwner").value.trim(),phone,whatsapp:phone,plan:document.getElementById("managePlan").value}).eq("id",id);
+ document.getElementById("manageResult").textContent=error?error.message:"Dados atualizados.";
+ if(!error)await load();
+};
+const originalLoad=load;
+load=async function(){await originalLoad();fillManage();};
+fillManage();
