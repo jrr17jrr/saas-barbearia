@@ -4,7 +4,9 @@ const ctx=await ownerContext();
 if(ctx){
  const start=new Date();start.setHours(0,0,0,0);
  const end=new Date(start);end.setDate(end.getDate()+1);
- const month=new Date(start.getFullYear(),start.getMonth(),1);\n const week=new Date(start);week.setDate(start.getDate()-((start.getDay()+6)%7));\n
+ const month=new Date(start.getFullYear(),start.getMonth(),1);
+ const week=new Date(start);week.setDate(start.getDate()-((start.getDay()+6)%7));
+
  const [appointments,clients]=await Promise.all([
  supabase.from("appointments").select("client_name,starts_at,status,price,services(name)").eq("barbershop_id",ctx.shop.id).gte("starts_at",(week<month?week:month).toISOString()).order("starts_at"),
  supabase.from("clients").select("id").eq("barbershop_id",ctx.shop.id)
@@ -30,7 +32,8 @@ if(ctx){
  tbody.append(row);
  }
  if(!today.length){const row=document.createElement("tr");const td=document.createElement("td");td.colSpan=5;td.textContent="Sem agendamentos hoje.";row.append(td);tbody.append(row);}
- document.querySelectorAll(".clients .client").forEach(node=>node.remove());\n document.querySelectorAll(".cards .card small").forEach(node=>node.textContent="Dados atualizados");
+ document.querySelectorAll(".clients .client").forEach(node=>node.remove());
+ document.querySelectorAll(".cards .card small").forEach(node=>node.textContent="Dados atualizados");
  const moneyToday=document.querySelector(".finance .money h1");
  if(moneyToday)moneyToday.textContent=money(total(today.filter(a=>a.status==="completed")));
  const week=new Date(start);week.setDate(start.getDate()-((start.getDay()+6)%7));
