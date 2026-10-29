@@ -1,4 +1,12 @@
 document.addEventListener("DOMContentLoaded", () => {
+  const savedSite=JSON.parse(localStorage.getItem("barberSite")||"null");
+  if(savedSite){
+    const title=document.querySelector(".container > h1"); if(title) title.textContent=savedSite.name||"Barbearia Vision";
+    const logo=document.querySelector(".container > .logo"); if(logo&&savedSite.logo) logo.src=savedSite.logo;
+    const status=document.querySelector(".status"); if(status) status.lastChild.textContent=" "+(savedSite.status||"Aberto agora");
+    const info=document.querySelectorAll(".info-card b"); if(info[1]&&savedSite.address) info[1].textContent=savedSite.address;
+    const section=document.querySelector(".services"); if(section&&savedSite.services?.length){section.innerHTML=`<h2>Serviços</h2>`+savedSite.services.map(s=>`<div class="service-card"><img src="${s.image||"/img/disfarcado.jpg"}" alt="${s.name}"><div class="service-info"><h3>${s.name}</h3><p>${s.description||""}</p><div class="details"><span>${s.duration} min</span><span>R$ ${s.price}</span></div><a href="#" class="schedule-btn">Agendar</a></div></div>`).join("");}
+  }
   const services = [...document.querySelectorAll(".service-card")].map((card, index) => {
     const details = card.querySelectorAll(".details span");
     return {
