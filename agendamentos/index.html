@@ -4,7 +4,10 @@
 <button class="menu-mobile" id="menuBtn">☰</button><div class="overlay" id="overlay"></div>
 <main class="content"><header class="topbar"><div><h1>Minha Agenda</h1><p>Veja horários livres, bloqueios e clientes agendados.</p></div><div class="top-actions"><button class="ghost-btn" id="blockBtn">+ Bloquear horário</button><button class="new-btn" id="newBtn">+ Novo agendamento</button></div></header>
 <section class="summary"><div><small>Hoje</small><strong>5 agendados</strong></div><div><small>Disponíveis</small><strong>6 horários</strong></div><div><small>Bloqueados</small><strong>2 horários</strong></div><div><small>Concluídos</small><strong>2 clientes</strong></div></section>
-<section class="agenda-box"><div class="agenda-head"><div><h2>Quinta-feira, 29 de outubro</h2><p>Expediente 08:00 — 17:00</p></div><div class="view-tabs"><button class="active">Hoje</button><button>Semana</button></div></div><div class="timeline" id="timeline"></div></section>
+<section class="agenda-box"><div class="agenda-head"><div><h2>Quinta-feira, 29 de outubro</h2><p>Expediente 08:00 — 17:00</p></div><div class="view-tabs"><button id="todayView" class="active">Hoje</button><button id="weekView">Semana</button></div></div>
+<div class="week-nav" id="weekNav"><button id="prevWeek">‹</button><strong id="weekLabel">26 out — 31 out</strong><button id="nextWeek">›</button></div>
+<div class="mobile-days" id="mobileDays"></div>
+<div class="timeline" id="timeline"></div><div class="week-grid" id="weekGrid"></div></section>
 </main></div>
 <div class="modal-layer" id="modalLayer"><div class="modal" id="modal"></div></div>
 <script src="/menu.js"></script><script src="agenda.js"></script></body></html>
