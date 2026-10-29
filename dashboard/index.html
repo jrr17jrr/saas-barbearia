@@ -26,41 +26,14 @@
         </div>
 
         <nav class="menu">
-          <a href="#" class="active">
-            <span>🏠</span>
-            Dashboard
-          </a>
-
-          <a href="/agendamentos/index.html">
-            <span>📅</span>
-            Agendamentos
-          </a>
-
-          <!-- <a href="#">
-            <span>👥</span>
-            Clientes
-          </a> -->
-
-          <a href="/lucros/index.html">
-            <span>💰</span>
-            Lucros
-          </a>
-
-          <!-- <a href="/link-agendamento/index.html" target="_blank">
-            <span>🔗</span>
-            Meu Link
-          </a> -->
-
-          <a href="/editar-link/index.html">
-            <span>✏️</span>
-            Meu site
-          </a>
-
-          <!-- <a href="/configuracões/index.html">
-            <span>⚙️</span>
-            Configurações
-          </a> -->
-        </nav>
+<a href="#" class="active"><span>🏠</span>Dashboard</a>
+<a href="/agendamentos/index.html"><span>📅</span>Agenda</a>
+<a href="/clientes/index.html"><span>👥</span>Clientes</a>
+<a href="/servicos/index.html"><span>✂️</span>Serviços</a>
+<a href="/horarios/index.html"><span>🕐</span>Horários</a>
+<a href="/lucros/index.html"><span>💰</span>Financeiro</a>
+<a href="/editar-link/index.html"><span>✏️</span>Meu site</a>
+</nav>
       </aside>
 
       <!-- CONTEUDO -->
@@ -73,7 +46,7 @@
             <p>Olá, Ricardo 👋 Tenha uma visão geral da sua barbearia</p>
           </div>
 
-          <button class="new-btn">+ Novo Agendamento</button>
+          <button class="new-btn" onclick="location.href='/agendamentos/index.html'">Abrir Agenda</button>
         </header>
 
         <!-- CARDS -->
@@ -134,7 +107,7 @@
           <div class="section-title">
             <h2>Agenda de Hoje</h2>
 
-            <button>Ver todos</button>
+            <button onclick="location.href='/agendamentos/index.html'">Ver agenda</button>
           </div>
 
           <table>
