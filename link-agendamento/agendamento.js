@@ -100,7 +100,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const botCfg=savedSite?.chatbot||{enabled:true,name:"Assistente Barber",greeting:"Olá! Vou te ajudar a agendar seu horário."};
   if(botCfg.enabled!==false){
     document.body.insertAdjacentHTML("beforeend",`
-      <button class="chatbot-launch" id="chatbotLaunch">Conversar e agendar</button>
+      <button class="chatbot-launch" id="chatbotLaunch">${botCfg.button||"Conversar e agendar"}</button>
       <section class="chatbot-panel" id="chatbotPanel">
         <div class="chatbot-head"><div><b>${botCfg.name||"Assistente Barber"}</b><small>Agendamento online</small></div><button id="chatbotClose">×</button></div>
         <div class="chatbot-messages" id="chatMessages"></div>
