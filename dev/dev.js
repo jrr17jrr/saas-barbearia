@@ -4,7 +4,7 @@ const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&
 const user=await currentUser();
 if(user){
  if(!await platformAdmin(user)){location.replace("/dashboard/");}
- else await load();
+ else {await load();}
 }
 $("logout").onclick=async()=>{await supabase.auth.signOut();location.replace("/login/");};
 $("newShop").onclick=()=>{$("formbox").classList.toggle("open");};
