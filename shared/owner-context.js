@@ -1,7 +1,7 @@
 import { supabase, currentUser, platformAdmin } from "./supabase-client.js";
 export async function ownerContext(){
  const user=await currentUser();
- if(!user)return null;
+ if(!user){location.replace("/login/");return null;}
  const {data,error}=await supabase.from("barbershop_members").select("barbershop_id,role").eq("user_id",user.id).limit(1).maybeSingle();
  if(error)throw error;
  if(!data){
