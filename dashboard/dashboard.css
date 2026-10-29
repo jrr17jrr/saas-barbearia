@@ -495,3 +495,4 @@ padding:15px 0;
 border-bottom:1px solid #334155;
 
 }
+.icon svg,.avatar svg{width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.card,.agenda,.clients,.finance{border:1px solid rgba(148,163,184,.08);box-shadow:0 10px 30px rgba(0,0,0,.08)}.card{transition:.2s ease}.card:hover{transform:translateY(-2px);border-color:rgba(25,184,237,.3)}.icon{background:rgba(4,164,220,.14)!important;color:#38c7f4!important}.avatar{background:rgba(4,164,220,.14)!important;color:#38c7f4!important}
