@@ -1,8 +1,9 @@
 document.addEventListener("DOMContentLoaded", () => {
+  const isLightColor=hex=>{const c=(hex||"#000000").replace("#","");const r=parseInt(c.slice(0,2),16),g=parseInt(c.slice(2,4),16),b=parseInt(c.slice(4,6),16);return (r*299+g*587+b*114)/1000>170};
   const savedSite=JSON.parse(localStorage.getItem("barberSite")||"null");
   if(savedSite){
     const colors=savedSite.colors||{primary:"#08a9df",background:"#0b1220",card:"#131e31"};
-    document.documentElement.style.setProperty("--site-primary",colors.primary);document.documentElement.style.setProperty("--site-bg",colors.background);document.documentElement.style.setProperty("--site-card",colors.card);
+    const light=isLightColor(colors.background);document.documentElement.style.setProperty("--site-primary",colors.primary);document.documentElement.style.setProperty("--site-bg",colors.background);document.documentElement.style.setProperty("--site-card",colors.card);document.documentElement.style.setProperty("--site-text",light?"#111827":"#ffffff");document.documentElement.style.setProperty("--site-muted",light?"#64748b":"#8190a5");document.documentElement.style.setProperty("--site-surface",light?"#f1f5f9":"#0d1728");document.documentElement.style.setProperty("--site-border",light?"#dbe3ee":"#223149");
     const title=document.querySelector(".container > h1"); if(title) title.textContent=savedSite.name||"Barbearia Vision";
     const logo=document.querySelector(".container > .logo"); if(logo&&savedSite.logo) logo.src=savedSite.logo;
     const status=document.querySelector(".status"); if(status) status.lastChild.textContent=" "+(savedSite.status||"Aberto agora");
