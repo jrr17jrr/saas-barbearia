@@ -21,4 +21,26 @@ function blockTime(time){shell("Bloquear horário",`<div class="detail-card"><b>
 function confirmBlock(time){const s=schedule.find(x=>x[0]===time);s[1]="block";closeModal();render()} function unblock(time){const s=schedule.find(x=>x[0]===time);s[1]=null;render()}
 function manual(time){shell("Novo agendamento",`<div class="detail-card"><b>Hoje às ${time}</b><span>Horário disponível</span></div><label class="field">Cliente<input placeholder="Nome do cliente"></label><label class="field">WhatsApp<input placeholder="(21) 99999-9999"></label><label class="field">Serviço<select><option>Corte disfarçado</option><option>Barba</option><option>Corte + Barba</option></select></label><div class="modal-actions"><button onclick="closeModal()">Cancelar</button><button class="primary" onclick="alert('Protótipo: será salvo no banco na próxima etapa')">Agendar</button></div>`)}
 document.getElementById("blockBtn").onclick=()=>shell("Bloquear horário",`<label class="field">Data<input type="date"></label><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><label class="field">De<input type="time" value="12:00"></label><label class="field">Até<input type="time" value="13:00"></label></div><label class="field">Motivo<input placeholder="Ex.: Almoço"></label><label class="field"><span>Repetição</span><select><option>Somente este dia</option><option>Todos os dias úteis</option><option>Toda semana</option></select></label><div class="modal-actions"><button onclick="closeModal()">Cancelar</button><button class="primary" onclick="alert('Bloqueio pronto para ser conectado ao banco')">Salvar bloqueio</button></div>`);
-document.getElementById("newBtn").onclick=()=>manual("Escolher horário");render();
+document.getElementById("newBtn").onclick=()=>manual("Escolher horário");
+
+const weekData=[
+{day:"SEG",date:"26",items:[["08:00","João","Corte"],["09:20","Livre","free"],["10:00","Pedro","Barba"],["12:00","Almoço","block"],["13:00","Livre","free"],["15:00","Lucas","Corte + Barba"],["16:20","Livre","free"]]},
+{day:"TER",date:"27",items:[["08:00","Livre","free"],["08:40","Carlos","Corte"],["10:00","Livre","free"],["12:00","Almoço","block"],["13:40","Gabriel","Corte"],["15:00","Livre","free"],["16:00","Livre","free"]]},
+{day:"QUA",date:"28",items:[["08:00","Marcos","Barba"],["09:00","Livre","free"],["10:20","Rafael","Corte"],["12:00","Almoço","block"],["13:00","Livre","free"],["14:20","André","Corte + Barba"],["16:00","Livre","free"]]},
+{day:"QUI",date:"29",today:true,items:[["08:00","João Silva","Corte"],["08:40","Carlos","Corte + Barba"],["10:00","Pedro","Barba"],["12:00","Almoço","block"],["13:00","Lucas","Corte"],["15:00","Gabriel","Corte + Barba"],["16:00","Compromisso","block"]]},
+{day:"SEX",date:"30",items:[["08:00","Livre","free"],["08:40","Matheus","Corte"],["10:00","Livre","free"],["11:20","Bruno","Barba"],["12:00","Almoço","block"],["14:00","Livre","free"],["15:20","Diego","Corte"]]},
+{day:"SÁB",date:"31",items:[["09:00","Felipe","Corte"],["09:40","Livre","free"],["10:20","Arthur","Corte"],["11:00","Livre","free"],["12:00","Thiago","Corte + Barba"],["13:00","Livre","free"],["14:00","Encerrado","block"]]}
+];
+function weekCard(item){const [time,name,type]=item;return `<button class="week-item ${type||""}" ${type==="block"?"disabled":""}><span>${time}</span><b>${name}</b><small>${type==="free"?"Disponível":type==="block"?"Bloqueado":"Agendado"}</small></button>`}
+function renderWeek(){
+ document.getElementById("weekGrid").innerHTML=weekData.map(d=>`<div class="week-day ${d.today?"today":""}"><div class="week-day-head"><span>${d.day}</span><b>${d.date}</b>${d.today?"<small>Hoje</small>":""}</div><div class="week-items">${d.items.map(weekCard).join("")}</div></div>`).join("");
+ document.getElementById("mobileDays").innerHTML=weekData.map((d,i)=>`<button class="${d.today?"active":""}" onclick="selectMobileDay(${i},this)"><b>${d.day}</b><span>${d.date}</span></button>`).join("");
+}
+function selectMobileDay(i,el){document.querySelectorAll("#mobileDays button").forEach(x=>x.classList.remove("active"));el.classList.add("active");document.querySelectorAll(".week-day").forEach((x,n)=>x.classList.toggle("mobile-selected",n===i))}
+function setView(view){
+ const week=view==="week";document.getElementById("timeline").style.display=week?"none":"grid";document.getElementById("weekGrid").classList.toggle("show",week);document.getElementById("weekNav").classList.toggle("show",week);document.getElementById("mobileDays").classList.toggle("show",week);document.getElementById("todayView").classList.toggle("active",!week);document.getElementById("weekView").classList.toggle("active",week);
+ if(week){renderWeek();setTimeout(()=>{const idx=weekData.findIndex(x=>x.today);const btn=document.querySelectorAll("#mobileDays button")[idx];if(btn)selectMobileDay(idx,btn)},0)}
+}
+document.getElementById("todayView").onclick=()=>setView("today");document.getElementById("weekView").onclick=()=>setView("week");
+let weekOffset=0;function moveWeek(n){weekOffset+=n;document.getElementById("weekLabel").textContent=weekOffset===0?"26 out — 31 out":weekOffset>0?"02 nov — 07 nov":"19 out — 24 out";}document.getElementById("prevWeek").onclick=()=>moveWeek(-1);document.getElementById("nextWeek").onclick=()=>moveWeek(1);
+render();
