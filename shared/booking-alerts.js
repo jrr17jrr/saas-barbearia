@@ -61,7 +61,9 @@ async function refresh(){
  if(sub){floating?.remove();floating=null;return;}
  if(!floating&&!sessionStorage.getItem("pushDismissed")){
   floating=document.createElement("button");floating.type="button";floating.className="push-btn";floating.textContent="🔔 Ativar avisos de agendamento";
-  floating.onclick=openPanel;document.body.append(floating);
+  floating.onclick=openPanel;
+  const x=document.createElement("span");x.textContent=" ×";x.setAttribute("aria-label","Dispensar");x.style.cssText="margin-left:8px;font-size:16px;opacity:.7";x.onclick=e=>{e.stopPropagation();sessionStorage.setItem("pushDismissed","1");floating.remove();floating=null;};floating.append(x);
+  document.body.append(floating);
  }
 }
 if(ctx&&!ctx.support){

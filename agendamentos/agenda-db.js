@@ -80,7 +80,7 @@ function renderWeek(){
  $("weekLabel").textContent=dateLabel(first,{day:"2-digit",month:"short"})+" — "+dateLabel(last,{day:"2-digit",month:"short"});
  $("dayTitle").textContent="Semana";$("dayHours").textContent="Toque em um agendamento para gerenciar.";
  weekGrid.replaceChildren();mobileDays.replaceChildren();
- weekGrid.style.gridTemplateColumns="repeat(7,minmax(150px,1fr))";
+ weekGrid.style.gridTemplateColumns="repeat(7,minmax(118px,1fr))";
  const mobileSel=selected>=first&&selected<=last?selected:first;
  for(let i=0;i<7;i++){
   const key=addDays(first,i);
@@ -88,8 +88,8 @@ function renderWeek(){
   const dayAppts=onDay(appointments,key),dayBlocks=onDay(blocks,key);
   col.innerHTML='<div class="week-day-head"><span>'+esc(dateLabel(key,{weekday:"short"}))+'</span><b>'+key.slice(8)+'</b><small>'+dayAppts.filter(a=>a.status!=="cancelled").length+'</small></div><div class="week-items"></div>';
   const list=col.querySelector(".week-items");
-  for(const a of dayAppts){const b=document.createElement("button");b.className="week-item";b.innerHTML="<span></span><b></b><small></small>";b.querySelector("span").textContent=hm(a.starts_at);b.querySelector("b").textContent=a.client_name;b.querySelector("small").textContent=(a.services?.name||"Serviço")+" • "+statusLabel(a.status);if(a.status==="cancelled")b.style.opacity=".5";b.onclick=()=>manage(a);list.append(b);}
-  for(const bl of dayBlocks){const b=document.createElement("button");b.className="week-item block";b.innerHTML="<span></span><b>Bloqueado</b><small></small>";b.querySelector("span").textContent=hm(bl.starts_at)+"–"+hm(bl.ends_at);b.querySelector("small").textContent=bl.reason||"";b.onclick=()=>removeBlock(bl);list.append(b);}
+  const entries=[...dayAppts.map(a=>({t:a.starts_at,a})),...dayBlocks.map(bl=>({t:bl.starts_at,bl}))].sort((x,y)=>new Date(x.t)-new Date(y.t));
+  for(const {a,bl} of entries){if(a){const b=document.createElement("button");b.className="week-item";b.innerHTML="<span></span><b></b><small></small>";b.querySelector("span").textContent=hm(a.starts_at);b.querySelector("b").textContent=a.client_name;b.querySelector("small").textContent=(a.services?.name||"Serviço")+" • "+statusLabel(a.status);if(a.status==="cancelled")b.style.opacity=".5";b.onclick=()=>manage(a);list.append(b);}else{const b=document.createElement("button");b.className="week-item block";b.innerHTML="<span></span><b>Bloqueado</b><small></small>";b.querySelector("span").textContent=hm(bl.starts_at)+"–"+hm(bl.ends_at);b.querySelector("small").textContent=bl.reason||"";b.onclick=()=>removeBlock(bl);list.append(b);}}
   if(!dayAppts.length&&!dayBlocks.length){const s=document.createElement("small");s.className="empty-note";s.style.padding="6px";s.textContent=hours.find(x=>x.weekday===weekday(key))?.is_open?"Livre":"Fechado";list.append(s);}
   const open=document.createElement("button");open.className="week-item free";open.innerHTML="<b>Ver dia</b>";open.onclick=()=>{selected=key;dateInput.value=key;view="day";load();};list.append(open);
   weekGrid.append(col);
@@ -116,7 +116,7 @@ async function summary(){
 async function setStatus(a,status){
  const {error}=await supabase.from("appointments").update({status}).eq("id",a.id).eq("barbershop_id",shop.id);
  if(error){toast(errorText(error),"error");return false;}
- toast("Agendamento "+statusLabel(status).toLowerCase()+".","success");close();await load();return true;
+ toast({confirmed:"Agendamento confirmado.",completed:"Atendimento concluído.",no_show:"Falta registrada.",cancelled:"Agendamento cancelado. O horário foi liberado.",pending:"Agendamento voltou para pendente."}[status]||"Status atualizado.","success");close();await load();return true;
 }
 function openWhatsApp(a,text){
  const msg=text||("Olá, "+a.client_name+"! Aqui é da "+shop.name+". Sobre seu horário de "+dateLabel(dayKey(new Date(a.starts_at)),{day:"2-digit",month:"2-digit"})+" às "+hm(a.starts_at)+".");
