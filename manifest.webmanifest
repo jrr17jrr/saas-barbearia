@@ -1,1 +1,21 @@
-{"name":"BarberSaaS","short_name":"BarberSaaS","start_url":"/dashboard/","display":"standalone","background_color":"#07111f","theme_color":"#08a9df","icons":[{"src":"/img/logo.png","sizes":"any","type":"image/png","purpose":"any"}]}
+{
+ "id": "/dashboard/",
+ "name": "BarberSaaS — Painel da barbearia",
+ "short_name": "BarberSaaS",
+ "description": "Agenda, clientes e notificações de novos agendamentos.",
+ "lang": "pt-BR",
+ "start_url": "/dashboard/?source=pwa",
+ "scope": "/",
+ "display": "standalone",
+ "orientation": "portrait",
+ "background_color": "#07111f",
+ "theme_color": "#08a9df",
+ "icons": [
+  {"src": "/img/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+  {"src": "/img/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+  {"src": "/img/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+ ],
+ "shortcuts": [
+  {"name": "Agenda", "url": "/agendamentos/", "icons": [{"src": "/img/icon-192.png", "sizes": "192x192"}]}
+ ]
+}
