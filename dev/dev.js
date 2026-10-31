@@ -104,13 +104,13 @@ async function uploadLogo(id,file){
 }
 async function owners(shop){
  if(!shop)return;
- open('<h2>Acessos • '+esc(shop.name)+'</h2><div id="memberList" class="muted">Carregando...</div><h3 style="margin-top:18px">Criar acesso do proprietário</h3><form id="ownerForm" class="bs-form"><label>Nome<input name="name" required maxlength="100" autocomplete="off"></label><label>E-mail<input name="email" type="email" required autocomplete="off"></label><p class="muted">Uma senha inicial forte será gerada e exibida uma única vez. O proprietário pode trocá-la em “Esqueci minha senha”.</p><div class="bs-actions"><button type="submit" class="primary">Criar conta</button><button type="button" id="closeOwners">Fechar</button></div><p class="bs-error" id="ownerError" role="alert"></p><div id="ownerResult"></div></form>');
+ open('<h2>Acessos • '+esc(shop.name)+'</h2><div id="memberList" class="muted">Carregando...</div><h3 style="margin-top:18px">Criar acesso do proprietário</h3><form id="ownerForm" class="bs-form"><label>Nome<input name="name" required maxlength="100" autocomplete="off"></label><label>E-mail<input name="email" type="email" required autocomplete="off"></label><label>Senha inicial (mínimo 10 caracteres)<input name="password" type="text" minlength="10" autocomplete="off" placeholder="Digite ou deixe vazio para gerar"></label><p class="muted">Você pode definir a senha ou deixar em branco para gerar uma senha forte. Ela será exibida após criar a conta.</p><div class="bs-actions"><button type="submit" class="primary">Criar conta</button><button type="button" id="closeOwners">Fechar</button></div><p class="bs-error" id="ownerError" role="alert"></p><div id="ownerResult"></div></form>');
  $("closeOwners").onclick=close;
  await listMembers(shop);
  const f=$("ownerForm");
  f.onsubmit=async e=>{
   e.preventDefault();$("ownerError").textContent="";
-  const password=randomPassword(),submit=f.querySelector('[type="submit"]');submit.disabled=true;
+  const password=f.elements.password.value||randomPassword(),submit=f.querySelector('[type="submit"]');submit.disabled=true;
   const {data,error}=await supabase.functions.invoke("create-barbershop-owner",{body:{action:"create_owner",barbershop_id:shop.id,name:f.elements.name.value.trim(),email:f.elements.email.value.trim(),password}});
   submit.disabled=false;
   let message=data?.error;
