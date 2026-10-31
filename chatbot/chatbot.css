@@ -22,3 +22,8 @@ html{height:100%;-webkit-text-size-adjust:100%}
  .inputbar button{min-height:46px}
  footer{flex:none;padding:7px 10px max(7px,env(safe-area-inset-bottom,0px));font-size:9px}
 }
+
+/* Keep the conversation visible when many options are offered */
+.options{max-height:42vh;overflow-y:auto;flex-shrink:0}
+.options.times{grid-template-columns:repeat(3,minmax(0,1fr))}
+.options.times button{text-align:center}

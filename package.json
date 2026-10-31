@@ -1,0 +1,15 @@
+{
+  "name": "barbersaas",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/static.test.mjs && node tests/api.test.mjs",
+    "test:api": "node tests/api.test.mjs",
+    "test:api:write": "node tests/api.test.mjs --write",
+    "test:e2e": "node tests/e2e-public.mjs && node tests/e2e-owner-mock.mjs",
+    "test:static": "node tests/static.test.mjs"
+  },
+  "devDependencies": {
+    "puppeteer-core": "^23.11.1"
+  }
+}

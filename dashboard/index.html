@@ -4,17 +4,17 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>Barber SaaS</title>
+    <title>Dashboard | BarberSaaS</title>
 
     <link rel="stylesheet" href="dashboard.css" />
     <link rel="stylesheet" href="dashboardmob.css" />
-    <link rel="stylesheet" href="/menu.css">
+    <link rel="stylesheet" href="/menu.css"><link rel="stylesheet" href="/shared/ui.css">
 
     <link
       href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-  </head>
+  <link rel="manifest" href="/manifest.webmanifest"><link rel="icon" href="/img/favicon.png"><link rel="apple-touch-icon" href="/img/apple-touch-icon.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="BarberSaaS"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="theme-color" content="#08a9df"></head>
 
   <body>
     <div class="layout">
@@ -42,190 +42,45 @@
         <header class="topbar">
           <div>
             <h1>Dashboard</h1>
-
-            <p>Olá, Ricardo 👋 Tenha uma visão geral da sua barbearia</p>
+            <p id="greeting">Carregando dados da barbearia...</p>
           </div>
-
           <button class="new-btn" onclick="location.href='/agendamentos/index.html'">Abrir Agenda</button>
         </header>
-
-        <!-- CARDS -->
-
         <section class="cards">
-          <div class="card">
-            <div class="icon"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg></div>
-
-            <div>
-              <span>Agendamentos Hoje</span>
-
-              <h2>18</h2>
-
-              <small>+3 comparado a ontem</small>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="icon"><svg viewBox="0 0 24 24"><path d="M12 2v20M17 6H9.5a3.5 3.5 0 0 0 0 7H14a3.5 3.5 0 0 1 0 7H6"/></svg></div>
-
-            <div>
-              <span>Faturamento</span>
-
-              <h2>R$ 980</h2>
-
-              <small>Hoje</small>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="icon"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg></div>
-
-            <div>
-              <span>Clientes</span>
-
-              <h2>35</h2>
-
-              <small>Esse mês</small>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="icon"><svg viewBox="0 0 24 24"><circle cx="6" cy="7" r="3"/><circle cx="6" cy="17" r="3"/><path d="m8.6 8.5 11.4 6.5M8.6 15.5 20 9"/></svg></div>
-
-            <div>
-              <span>Serviços</span>
-
-              <h2>42</h2>
-
-              <small>Realizados</small>
-            </div>
-          </div>
+          <div class="card"><div class="icon"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg></div><div><span>Agendamentos hoje</span><h2 id="kpiToday">—</h2><small id="kpiTodayNote">&nbsp;</small></div></div>
+          <div class="card"><div class="icon"><svg viewBox="0 0 24 24"><path d="M12 2v20M17 6H9.5a3.5 3.5 0 0 0 0 7H14a3.5 3.5 0 0 1 0 7H6"/></svg></div><div><span>Faturamento hoje</span><h2 id="kpiRevenue">—</h2><small id="kpiRevenueNote">Atendimentos concluídos</small></div></div>
+          <div class="card"><div class="icon"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg></div><div><span>Clientes atendidos</span><h2 id="kpiClients">—</h2><small>Este mês</small></div></div>
+          <div class="card"><div class="icon"><svg viewBox="0 0 24 24"><circle cx="6" cy="7" r="3"/><circle cx="6" cy="17" r="3"/><path d="m8.6 8.5 11.4 6.5M8.6 15.5 20 9"/></svg></div><div><span>Serviços realizados</span><h2 id="kpiServices">—</h2><small id="kpiServicesNote">Este mês</small></div></div>
         </section>
-
-        <!-- AGENDA -->
-
         <section class="agenda">
           <div class="section-title">
-            <h2>Agenda de Hoje</h2>
-
+            <h2>Agenda de hoje</h2>
             <button onclick="location.href='/agendamentos/index.html'">Ver agenda</button>
           </div>
-
           <table>
-            <thead>
-              <tr>
-                <th>Horário</th>
-
-                <th>Cliente</th>
-
-                <th>Serviço</th>
-
-                <th>Barbeiro</th>
-
-                <th>Status</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              <tr>
-                <td>09:00</td>
-
-                <td>João Pedro</td>
-
-                <td>Corte Degradê</td>
-
-                <td>Ricardo</td>
-
-                <td>
-                  <span class="status confirmado"> Confirmado </span>
-                </td>
-              </tr>
-
-              <tr>
-                <td>10:30</td>
-
-                <td>Lucas Silva</td>
-
-                <td>Corte + Barba</td>
-
-                <td>Carlos</td>
-
-                <td>
-                  <span class="status pendente"> Pendente </span>
-                </td>
-              </tr>
-
-              <tr>
-                <td>14:00</td>
-
-                <td>Marcos</td>
-
-                <td>Barba</td>
-
-                <td>Ricardo</td>
-
-                <td>
-                  <span class="status confirmado"> Confirmado </span>
-                </td>
-              </tr>
-            </tbody>
+            <thead><tr><th>Horário</th><th>Cliente</th><th>Serviço</th><th>Valor</th><th>Status</th></tr></thead>
+            <tbody id="todayRows"><tr><td colspan="5">Carregando...</td></tr></tbody>
           </table>
         </section>
-
         <section class="bottom">
-          <div class="clients">
-            <h2>Próximos Clientes</h2>
-
-            <div class="client">
-              <div class="avatar"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></div>
-
-              <div>
-                <h3>Pedro Santos</h3>
-
-                <p>15:30 • Corte</p>
-              </div>
-            </div>
-
-            <div class="client">
-              <div class="avatar"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></div>
-
-              <div>
-                <h3>Gabriel Souza</h3>
-
-                <p>16:30 • Barba</p>
-              </div>
-            </div>
+          <div class="clients" id="upcoming">
+            <h2>Próximos clientes</h2>
+            <p class="empty-note">Carregando...</p>
           </div>
-
           <div class="finance">
-            <h2>Resumo Financeiro</h2>
-
-            <div class="money">
-              <span> Hoje </span>
-
-              <h1>R$980</h1>
-            </div>
-
-            <div class="finance-item">
-              <p>Semana</p>
-
-              <strong> R$4.500 </strong>
-            </div>
-
-            <div class="finance-item">
-              <p>Mês</p>
-
-              <strong> R$18.900 </strong>
-            </div>
+            <h2>Resumo financeiro</h2>
+            <div class="money"><span>Hoje</span><h1 id="finToday">—</h1></div>
+            <div class="finance-item"><p>Semana</p><strong id="finWeek">—</strong></div>
+            <div class="finance-item"><p>Mês</p><strong id="finMonth">—</strong></div>
+            <div class="finance-item"><p>Ticket médio (mês)</p><strong id="finTicket">—</strong></div>
           </div>
         </section>
       <div class="panel-visionario-credit"><a href="https://visionariodev.com.br" target="_blank" rel="noopener">Desenvolvido por Visionário Dev</a></div></main>
+
     </div>
 
     <button class="menu-mobile" id="menuBtn">☰</button>
-
- <script src="/menu.js"></script>
-
+    <div class="overlay" id="overlay"></div>
+    <script src="/menu.js"></script><script type="module" src="dashboard-data.js"></script><script type="module" src="/shared/pwa.js"></script><script type="module" src="/shared/booking-alerts.js"></script>
   </body>
-
-  <div class="overlay" id="overlay"></div>
 </html>

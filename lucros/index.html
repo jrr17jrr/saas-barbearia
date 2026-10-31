@@ -8,19 +8,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 
-    <title>Lucros | Barber SaaS</title>
+    <title>Financeiro | BarberSaaS</title>
 
 
     <link rel="stylesheet" href="lucros.css">
 
-    <link rel="stylesheet" href="/menu.css">
+    <link rel="stylesheet" href="/menu.css"><link rel="stylesheet" href="/shared/ui.css">
 
 
 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 
-</head>
+<link rel="manifest" href="/manifest.webmanifest"><link rel="icon" href="/img/favicon.png"><link rel="apple-touch-icon" href="/img/apple-touch-icon.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="BarberSaaS"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="theme-color" content="#08a9df"></head>
 
 
 <body>
@@ -116,314 +116,20 @@
 
 
         <section class="cards">
-
-
-
-            <div class="card">
-
-
-                <h3>
-                    Faturamento Hoje
-                </h3>
-
-
-                <h2>
-                    R$ 450
-                </h2>
-
-
-                <p>
-                    +12% comparado ontem
-                </p>
-
-
-            </div>
-
-
-
-
-
-
-            <div class="card">
-
-
-                <h3>
-                    Essa Semana
-                </h3>
-
-
-                <h2>
-                    R$ 2.850
-                </h2>
-
-
-                <p>
-                    68 atendimentos
-                </p>
-
-
-            </div>
-
-
-
-
-
-
-            <div class="card">
-
-
-                <h3>
-                    Esse Mês
-                </h3>
-
-
-                <h2>
-                    R$ 9.800
-                </h2>
-
-
-                <p>
-                    245 serviços
-                </p>
-
-
-            </div>
-
-
-
-
-
-
-
-            <div class="card">
-
-
-                <h3>
-                    Ticket Médio
-                </h3>
-
-
-                <h2>
-                    R$ 42
-                </h2>
-
-
-                <p>
-                    Por cliente
-                </p>
-
-
-            </div>
-
-
-
+            <div class="card"><h3>Faturamento hoje</h3><h2>—</h2><p>&nbsp;</p></div>
+            <div class="card"><h3>Esta semana</h3><h2>—</h2><p>&nbsp;</p></div>
+            <div class="card"><h3>Este mês</h3><h2>—</h2><p>&nbsp;</p></div>
+            <div class="card"><h3>Ticket médio</h3><h2>—</h2><p>Por atendimento no mês</p></div>
         </section>
-
-
-
-
-
-
-
-
-        <!-- ÁREA FINANCEIRA -->
-
-
         <section class="finance-layout">
-
-
-
-
-
-            <!-- PAGAMENTOS -->
-
-
-            <div class="finance-box">
-
-
-                <h2>
-                    Últimos Pagamentos
-                </h2>
-
-
-
-
-                <div class="payment">
-
-
-                    <div>
-
-                        <h3>
-                            João Silva
-                        </h3>
-
-
-                        <p>
-                            Corte + Barba
-                        </p>
-
-
-                    </div>
-
-
-
-                    <strong>
-                        R$ 70
-                    </strong>
-
-
-                </div>
-
-
-
-
-
-
-                <div class="payment">
-
-
-                    <div>
-
-                        <h3>
-                            Carlos Eduardo
-                        </h3>
-
-
-                        <p>
-                            Corte Disfarçado
-                        </p>
-
-
-                    </div>
-
-
-
-                    <strong>
-                        R$ 45
-                    </strong>
-
-
-                </div>
-
-
-
-
-
-
-                <div class="payment">
-
-
-                    <div>
-
-                        <h3>
-                            Lucas Ferreira
-                        </h3>
-
-
-                        <p>
-                            Barba
-                        </p>
-
-
-                    </div>
-
-
-
-                    <strong>
-                        R$ 25
-                    </strong>
-
-
-                </div>
-
-
-
-
-            </div>
-
-
-
-
-
-
-
-
-            <!-- SERVIÇOS -->
-
-
-            <div class="finance-box">
-
-
-                <h2>
-                    Serviços Mais Vendidos
-                </h2>
-
-
-
-
-
-                <div class="service-profit">
-
-
-                    <span>
-                        Corte Disfarçado
-                    </span>
-
-
-                    <strong>
-                        85
-                    </strong>
-
-
-                </div>
-
-
-
-
-
-                <div class="service-profit">
-
-
-                    <span>
-                        Corte + Barba
-                    </span>
-
-
-                    <strong>
-                        62
-                    </strong>
-
-
-                </div>
-
-
-
-
-
-                <div class="service-profit">
-
-
-                    <span>
-                        Barba
-                    </span>
-
-
-                    <strong>
-                        40
-                    </strong>
-
-
-                </div>
-
-
-
-
-            </div>
-
-
-
-
+            <div class="finance-box"><h2>Últimos atendimentos concluídos</h2><p class="empty-note">Carregando...</p></div>
+            <div class="finance-box"><h2>Serviços mais vendidos (mês)</h2><p class="empty-note">Carregando...</p></div>
         </section>
+        <section class="finance-layout" style="margin-top:20px">
+            <div class="finance-box" id="history"><h2>Histórico mensal</h2><p class="empty-note">Carregando...</p></div>
+            <div class="finance-box" id="losses"><h2>Cancelamentos e faltas (mês)</h2><p class="empty-note">Carregando...</p></div>
+        </section>
+
 
 
 
@@ -440,10 +146,10 @@
 
 
 
-<script src="/menu.js"></script>
+<script src="/menu.js"></script><script type="module" src="finance-db.js"></script>
 
 
-</body>
+<script type="module" src="/shared/pwa.js"></script><script type="module" src="/shared/booking-alerts.js"></script></body>
 
 
 </html>
