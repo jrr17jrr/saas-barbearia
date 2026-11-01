@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Configurações | BarberSaaS</title>
+<!-- pwa-head -->
+<link rel="stylesheet" href="/menu.css">
+<link rel="stylesheet" href="/configuracões/config.css">
+<link rel="stylesheet" href="/ui.css">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+.settings-grid{align-items:start}
+.box h2{font-size:18px;margin-bottom:14px}
+.box .ui-field input{margin-bottom:0}
+.box p{margin-bottom:10px}
+.kv{display:grid;gap:6px;margin-bottom:12px;color:#cbd5e1;font-size:14px}
+.badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:12px;font-weight:600;background:#12394b;color:#7dd3fc}
+.badge.off{background:#2a1820;color:#fca5a5}.badge.ok{background:#14532d;color:#bbf7d0}.badge.warn{background:#4a3410;color:#fde68a}
+.linkrow{display:flex;gap:8px;align-items:center;background:#0f172a;border:1px solid #334155;border-radius:10px;padding:8px 10px;margin-bottom:8px;flex-wrap:wrap}
+.linkrow code{flex:1;min-width:0;overflow-wrap:anywhere;font-size:12px;color:#7dd3fc}
+.push-state{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.prefs{display:grid;gap:2px;background:#0f172a;border-radius:10px;padding:6px 12px;margin:10px 0}
+.hint{font-size:12px;color:#94a3b8;line-height:1.5}
+.box-full{grid-column:1/-1}
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar"><div class="logo"><h2>Barber<span>SaaS</span></h2></div><nav class="menu"></nav></aside>
+  <button class="menu-mobile" id="menuBtn" type="button">☰</button>
+  <div class="overlay" id="overlay"></div>
+  <main class="content">
+    <section class="topbar"><div><h1>Configurações</h1><p>Gerencie sua barbearia, notificações e conta.</p></div></section>
+    <div class="settings-grid">
+      <div class="box" id="notificacoes">
+        <h2>Notificações no celular</h2>
+        <div class="push-state" id="pushState" aria-live="polite"><span class="ui-spinner"></span></div>
+        <p class="hint" id="pushHint"></p>
+        <div class="ui-actions"><button type="button" class="ui-btn primary" id="pushEnable">Ativar notificações</button><button type="button" class="ui-btn" id="pushTest">Enviar notificação de teste</button></div>
+        <div class="prefs" id="prefs">
+          <label class="ui-check"><input type="checkbox" data-pref="new_booking"> Novo agendamento</label>
+          <label class="ui-check"><input type="checkbox" data-pref="cancellation"> Cancelamento</label>
+          <label class="ui-check"><input type="checkbox" data-pref="reschedule"> Remarcação</label>
+          <label class="ui-check"><input type="checkbox" data-pref="reminder"> Lembrete antes do atendimento</label>
+        </div>
+        <label class="ui-field">Lembrete com antecedência de<select id="reminderMin"><option value="15">15 minutos</option><option value="30">30 minutos</option><option value="60">1 hora</option><option value="120">2 horas</option></select></label>
+        <button type="button" class="ui-btn small" id="pushDisable">Desativar neste aparelho</button>
+      </div>
+      <div class="box">
+        <h2>Dados da barbearia</h2>
+        <label class="ui-field">Nome<input id="fName" maxlength="80"></label>
+        <label class="ui-field">WhatsApp<input id="fWhats" inputmode="tel"></label>
+        <label class="ui-field">E-mail de contato<input id="fEmail" type="email" maxlength="120"></label>
+        <label class="ui-field">Endereço<input id="fAddress" maxlength="160"></label>
+        <button type="button" class="btn-primary" id="saveShop">Salvar dados</button>
+        <p class="hint" style="margin-top:10px">Redes sociais, logo e aparência ficam em <a href="/editar-link/" style="color:#7dd3fc">Meu site</a>.</p>
+      </div>
+      <div class="box">
+        <h2>Plano e links</h2>
+        <div class="kv" id="planInfo"></div>
+        <div id="links"></div>
+      </div>
+      <div class="box">
+        <h2>Aplicativo</h2>
+        <p class="hint" id="installHint">Instale o BarberSaaS no celular para abrir como aplicativo e receber notificações.</p>
+        <button type="button" class="btn-primary" id="installBtn" hidden>Instalar aplicativo</button>
+      </div>
+      <div class="box">
+        <h2>Conta</h2>
+        <div class="kv"><span>E-mail: <b id="accEmail">—</b></span></div>
+        <label class="ui-field">Nova senha<input id="newPw" type="password" autocomplete="new-password" minlength="8"></label>
+        <label class="ui-field">Confirmar nova senha<input id="newPw2" type="password" autocomplete="new-password" minlength="8"></label>
+        <button type="button" class="btn-primary" id="savePw">Alterar senha</button>
+        <div class="ui-actions"><button type="button" class="ui-btn" id="logoutAll">Sair de todos os dispositivos</button></div>
+      </div>
+    </div>
+    <div class="panel-visionario-credit"><a href="https://visionariodev.com.br" target="_blank" rel="noopener">Desenvolvido por Visionário Dev</a></div>
+  </main>
+</div>
+<script src="/menu.js"></script>
+<script type="module" src="configuracoes.js"></script>
+</body>
+</html>

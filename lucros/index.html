@@ -1,449 +1,64 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
-
 <head>
-
-    <meta charset="UTF-8">
-
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-
-    <title>Lucros | Barber SaaS</title>
-
-
-    <link rel="stylesheet" href="lucros.css">
-
-    <link rel="stylesheet" href="/menu.css">
-
-
-
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Financeiro | BarberSaaS</title>
+<!-- pwa-head -->
+<link rel="stylesheet" href="lucros.css">
+<link rel="stylesheet" href="/menu.css">
+<link rel="stylesheet" href="/ui.css">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+.period{display:flex;gap:8px;flex-wrap:wrap;align-items:end;margin:0 0 18px}
+.period label{display:grid;gap:4px;color:#94a3b8;font-size:12px}
+.period input,.period select{background:#0f172a;border:1px solid #334155;color:#fff;padding:10px;border-radius:10px;min-height:44px;font:14px Poppins,sans-serif}
+.period-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+.period-summary div{background:#141f32;border:1px solid rgba(148,163,184,.1);border-radius:14px;padding:14px}
+.period-summary small{color:#94a3b8;display:block}.period-summary b{font-size:18px}
+.bars{display:flex;align-items:flex-end;gap:10px;height:170px;padding-top:10px}
+.bars .bar{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end}
+.bars .bar i{display:block;width:100%;max-width:46px;background:linear-gradient(180deg,#19b8ed,#0e7fae);border-radius:8px 8px 3px 3px;min-height:3px}
+.bars .bar small{color:#94a3b8;font-size:11px}.bars .bar b{font-size:11px;color:#cbd5e1;white-space:nowrap}
+.rule-note{color:#94a3b8;font-size:12px;margin:-6px 0 16px}
+.payment p .status-pill{margin-left:6px}
+@media(max-width:768px){.period-summary{grid-template-columns:1fr 1fr}}
+</style>
 </head>
-
-
 <body>
-
-
-
 <div class="layout">
-
-
-
-    <!-- SIDEBAR -->
-
-    <aside class="sidebar">
-
-
-        <div class="logo">
-
-            <h2>
-                Barber<span>SaaS</span>
-            </h2>
-
-        </div>
-
-
-
-
-           <nav class="menu">
-<a href="/dashboard/index.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v10h13V10"/><path d="M9.5 20v-6h5v6"/></svg></span>Dashboard</a>
-<a href="/agendamentos/index.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg></span>Agenda</a>
-<a href="/clientes/index.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>Clientes</a>
-<a href="/servicos/index.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="6" cy="7" r="3"/><circle cx="6" cy="17" r="3"/><path d="m8.6 8.5 11.4 6.5M8.6 15.5 20 9M8.5 8.5 4 4"/></svg></span>Serviços</a>
-<a href="/horarios/index.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>Horários</a>
-<a href="/lucros/index.html" class="active"><span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="14" rx="2"/><path d="M7 10h10M7 16h5"/><circle cx="17" cy="15" r="1"/></svg></span>Financeiro</a>
-<a href="/chatbot-config/index.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-8 8H7l-4 2 1.5-4A8 8 0 1 1 21 12Z"/><path d="M8 12h.01M12 12h.01M16 12h.01"/></svg></span>Chatbot</a><a href="/editar-link/index.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg></span>Meu site</a>
-</nav>
-
-
-    </aside>
-
-
-
-
-
-    <!-- BOTÃO MOBILE -->
-
-    <button class="menu-mobile" id="menuBtn">
-
-        ☰
-
-    </button>
-
-
-
-
-    <div class="overlay" id="overlay"></div>
-
-
-
-
-
-    <!-- CONTEÚDO -->
-
-
-    <main class="content">
-
-
-
-        <section class="topbar">
-
-
-            <div>
-
-                <h1>Financeiro</h1>
-
-
-                <p>
-                    Acompanhe o desempenho financeiro da barbearia
-                </p>
-
-            </div>
-
-
-        </section>
-
-
-
-
-
-
-
-
-        <!-- CARDS FINANCEIROS -->
-
-
-        <section class="cards">
-
-
-
-            <div class="card">
-
-
-                <h3>
-                    Faturamento Hoje
-                </h3>
-
-
-                <h2>
-                    R$ 450
-                </h2>
-
-
-                <p>
-                    +12% comparado ontem
-                </p>
-
-
-            </div>
-
-
-
-
-
-
-            <div class="card">
-
-
-                <h3>
-                    Essa Semana
-                </h3>
-
-
-                <h2>
-                    R$ 2.850
-                </h2>
-
-
-                <p>
-                    68 atendimentos
-                </p>
-
-
-            </div>
-
-
-
-
-
-
-            <div class="card">
-
-
-                <h3>
-                    Esse Mês
-                </h3>
-
-
-                <h2>
-                    R$ 9.800
-                </h2>
-
-
-                <p>
-                    245 serviços
-                </p>
-
-
-            </div>
-
-
-
-
-
-
-
-            <div class="card">
-
-
-                <h3>
-                    Ticket Médio
-                </h3>
-
-
-                <h2>
-                    R$ 42
-                </h2>
-
-
-                <p>
-                    Por cliente
-                </p>
-
-
-            </div>
-
-
-
-        </section>
-
-
-
-
-
-
-
-
-        <!-- ÁREA FINANCEIRA -->
-
-
-        <section class="finance-layout">
-
-
-
-
-
-            <!-- PAGAMENTOS -->
-
-
-            <div class="finance-box">
-
-
-                <h2>
-                    Últimos Pagamentos
-                </h2>
-
-
-
-
-                <div class="payment">
-
-
-                    <div>
-
-                        <h3>
-                            João Silva
-                        </h3>
-
-
-                        <p>
-                            Corte + Barba
-                        </p>
-
-
-                    </div>
-
-
-
-                    <strong>
-                        R$ 70
-                    </strong>
-
-
-                </div>
-
-
-
-
-
-
-                <div class="payment">
-
-
-                    <div>
-
-                        <h3>
-                            Carlos Eduardo
-                        </h3>
-
-
-                        <p>
-                            Corte Disfarçado
-                        </p>
-
-
-                    </div>
-
-
-
-                    <strong>
-                        R$ 45
-                    </strong>
-
-
-                </div>
-
-
-
-
-
-
-                <div class="payment">
-
-
-                    <div>
-
-                        <h3>
-                            Lucas Ferreira
-                        </h3>
-
-
-                        <p>
-                            Barba
-                        </p>
-
-
-                    </div>
-
-
-
-                    <strong>
-                        R$ 25
-                    </strong>
-
-
-                </div>
-
-
-
-
-            </div>
-
-
-
-
-
-
-
-
-            <!-- SERVIÇOS -->
-
-
-            <div class="finance-box">
-
-
-                <h2>
-                    Serviços Mais Vendidos
-                </h2>
-
-
-
-
-
-                <div class="service-profit">
-
-
-                    <span>
-                        Corte Disfarçado
-                    </span>
-
-
-                    <strong>
-                        85
-                    </strong>
-
-
-                </div>
-
-
-
-
-
-                <div class="service-profit">
-
-
-                    <span>
-                        Corte + Barba
-                    </span>
-
-
-                    <strong>
-                        62
-                    </strong>
-
-
-                </div>
-
-
-
-
-
-                <div class="service-profit">
-
-
-                    <span>
-                        Barba
-                    </span>
-
-
-                    <strong>
-                        40
-                    </strong>
-
-
-                </div>
-
-
-
-
-            </div>
-
-
-
-
-        </section>
-
-
-
-
-
-    <div class="panel-visionario-credit"><a href="https://visionariodev.com.br" target="_blank" rel="noopener">Desenvolvido por Visionário Dev</a></div></main>
-
-
-
-
+  <aside class="sidebar"><div class="logo"><h2>Barber<span>SaaS</span></h2></div><nav class="menu"></nav></aside>
+  <button class="menu-mobile" id="menuBtn" type="button">☰</button>
+  <div class="overlay" id="overlay"></div>
+  <main class="content">
+    <section class="topbar"><div><h1>Financeiro</h1><p>Baseado nos atendimentos reais da barbearia.</p></div></section>
+    <p class="rule-note">Regra: somente atendimentos <b>concluídos</b> entram no faturamento. Cancelados e faltas não somam. Confirmados aparecem como “previsto”.</p>
+    <section class="cards" aria-live="polite">
+      <div class="card"><h3>Faturamento Hoje</h3><h2 id="cToday">—</h2><p>Concluídos hoje</p></div>
+      <div class="card"><h3>Essa Semana</h3><h2 id="cWeek">—</h2><p>Desde segunda-feira</p></div>
+      <div class="card"><h3>Esse Mês</h3><h2 id="cMonth">—</h2><p id="cMonthSub">&nbsp;</p></div>
+      <div class="card"><h3>Ticket Médio</h3><h2 id="cTicket">—</h2><p>No período selecionado</p></div>
+    </section>
+    <form class="period" id="periodForm">
+      <label>Período<select id="preset"><option value="month">Este mês</option><option value="week">Esta semana</option><option value="30">Últimos 30 dias</option><option value="prev">Mês anterior</option><option value="custom">Personalizado</option></select></label>
+      <label>De<input type="date" id="from"></label><label>Até<input type="date" id="to"></label>
+      <button class="ui-btn primary" type="submit">Aplicar</button>
+    </form>
+    <section class="period-summary" aria-live="polite">
+      <div><small>Faturamento no período</small><b id="pRevenue">—</b></div>
+      <div><small>Atendimentos concluídos</small><b id="pCount">—</b></div>
+      <div><small>Previsto (confirmados)</small><b id="pExpected">—</b></div>
+      <div><small>Cancelados · Faltas</small><b id="pLost">—</b></div>
+    </section>
+    <section class="finance-layout">
+      <div class="finance-box"><h2>Histórico</h2><div id="history"></div></div>
+      <div class="finance-box"><h2>Serviços Mais Vendidos</h2><div id="byService"></div><h2 style="margin-top:18px">Por profissional</h2><div id="byPro"></div></div>
+    </section>
+    <section class="finance-layout" style="margin-top:18px"><div class="finance-box" style="grid-column:1/-1"><h2>Evolução (últimos 6 meses)</h2><div id="monthly"></div></div></section>
+    <div class="panel-visionario-credit"><a href="https://visionariodev.com.br" target="_blank" rel="noopener">Desenvolvido por Visionário Dev</a></div>
+  </main>
 </div>
-
-
-
-
-
 <script src="/menu.js"></script>
-
-
+<script type="module" src="lucros.js"></script>
 </body>
-
-
 </html>
