@@ -1,0 +1,22 @@
+# Configuração do Supabase CLI para o projeto BarberSaaS (idtvkslyyexwbqcgrozh).
+project_id = "barbersaas"
+
+[auth]
+site_url = "https://saas-barbearia-swart.vercel.app"
+additional_redirect_urls = [
+  "https://saas-barbearia-swart.vercel.app/**",
+  "http://localhost:4173/**",
+  "http://127.0.0.1:4173/**"
+]
+
+# As funções validam a autorização internamente:
+#  - push-dispatch: segredo interno guardado no Vault (header x-dispatch-secret)
+#  - push / admin-users: JWT do usuário validado com auth.getUser()
+[functions.push-dispatch]
+verify_jwt = false
+
+[functions.push]
+verify_jwt = false
+
+[functions.admin-users]
+verify_jwt = false
