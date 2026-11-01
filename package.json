@@ -1,0 +1,19 @@
+{
+  "name": "barbersaas",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "BarberSaaS — SaaS multiempresa para barbearias (site estático + Supabase)",
+  "scripts": {
+    "test": "node --test tests/",
+    "test:db": "node --test tests/db.test.js",
+    "lint": "node scripts/lint.js",
+    "build": "node scripts/build.js",
+    "check": "npm run lint && npm test && npm run build",
+    "serve": "node scripts/serve.js"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.3.0",
+    "puppeteer-core": "^24.0.0"
+  }
+}
