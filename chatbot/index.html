@@ -1,1 +1,29 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Agendamento por chat | BarberPro</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="chatbot.css"></head><body><main class="chat-page"><header class="brand"><img id="shopLogo" src="/img/logo.png"><div><h1 id="shopName">Barbearia Vision</h1><span>Agendamento online</span></div></header><section class="conversation"><div class="chat-head"><div class="avatar">B</div><div><b id="botName">Assistente Barber</b><small>Online agora</small></div></div><div class="messages" id="chatMessages"></div><div class="options" id="chatOptions"></div><div class="inputbar hidden" id="chatInputbar"><input id="chatInput" autocomplete="off"><button id="chatSend">Enviar</button></div></section><footer>Agendamento rápido e fácil · <a href="https://visionariodev.com.br" target="_blank" rel="noopener">Desenvolvido por Visionário Dev</a></footer></main><script src="chatbot.js"></script></body></html>
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b1220">
+<title>Agendamento por chat</title>
+<link rel="icon" href="/icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="chatbot.css">
+<link rel="stylesheet" href="/ui.css">
+<style>.options button,.inputbar button,.inputbar input{min-height:44px}.state{padding:40px 20px;text-align:center;color:var(--muted)}.back-site{display:block;text-align:center;font-size:11px;margin-top:8px;color:var(--muted)}</style>
+</head>
+<body>
+<main class="chat-page">
+  <header class="brand"><img id="shopLogo" src="/img/logo.png" alt=""><div><h1 id="shopName">Carregando...</h1><span>Agendamento online</span></div></header>
+  <section class="conversation" aria-label="Conversa de agendamento">
+    <div class="chat-head"><div class="avatar" aria-hidden="true">A</div><div><b id="botName">Assistente</b><small>Online agora</small></div></div>
+    <div class="messages" id="chatMessages" role="log" aria-live="polite"><div class="state"><span class="ui-spinner" style="display:inline-block"></span></div></div>
+    <div class="options" id="chatOptions"></div>
+    <div class="inputbar hidden" id="chatInputbar"><label class="sr-only" for="chatInput">Mensagem</label><input id="chatInput" autocomplete="off" maxlength="80"><button id="chatSend" type="button">Enviar</button></div>
+  </section>
+  <a class="back-site" id="backSite" hidden>Ver site da barbearia</a>
+  <footer>Agendamento rápido e fácil · <a href="https://visionariodev.com.br" target="_blank" rel="noopener">Desenvolvido por Visionário Dev</a></footer>
+</main>
+<script type="module" src="chatbot.js"></script>
+</body>
+</html>

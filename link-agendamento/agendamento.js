@@ -1,123 +1,197 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const isLightColor=hex=>{const c=(hex||"#000000").replace("#","");const r=parseInt(c.slice(0,2),16),g=parseInt(c.slice(2,4),16),b=parseInt(c.slice(4,6),16);return (r*299+g*587+b*114)/1000>170};
-  const savedSite=JSON.parse(localStorage.getItem("barberSite")||"null");
-  if(savedSite){
-    const colors=savedSite.colors||{primary:"#08a9df",background:"#0b1220",card:"#131e31"};
-    const light=isLightColor(colors.background),primaryLight=isLightColor(colors.primary);document.documentElement.style.setProperty("--site-primary",colors.primary);document.documentElement.style.setProperty("--site-primary-text",primaryLight?"#111827":"#ffffff");document.documentElement.style.setProperty("--site-bg",colors.background);document.documentElement.style.setProperty("--site-card",colors.card);document.documentElement.style.setProperty("--site-text",light?"#111827":"#ffffff");document.documentElement.style.setProperty("--site-muted",light?"#64748b":"#8190a5");document.documentElement.style.setProperty("--site-surface",light?"#f1f5f9":"#0d1728");document.documentElement.style.setProperty("--site-border",light?"#dbe3ee":"#223149");
-    const title=document.querySelector(".container > h1"); if(title) title.textContent=savedSite.name||"Barbearia Vision";
-    const logo=document.querySelector(".container > .logo"); if(logo&&savedSite.logo) logo.src=savedSite.logo;
-    const status=document.querySelector(".status"); if(status) status.lastChild.textContent=" "+(savedSite.status||"Aberto agora");
-    const info=document.querySelectorAll(".info-card b"); if(info[1]&&savedSite.address) info[1].textContent=savedSite.address;
-    const social=document.querySelector(".social");if(social){const links=[{key:"instagram",enabled:savedSite.instagramEnabled!==false,value:savedSite.instagram},{key:"whatsapp",enabled:savedSite.whatsappEnabled!==false,value:savedSite.whatsapp},{key:"facebook",enabled:!!savedSite.facebookEnabled,value:savedSite.facebook},{key:"tiktok",enabled:savedSite.tiktokEnabled!==false,value:savedSite.tiktok}];[...social.children].forEach((a,i)=>{const s=links[i];if(!s?.enabled){a.style.display="none";return;}a.style.display="grid";if(s.value){let href=s.value;if(s.key==="whatsapp")href="https://wa.me/55"+s.value.replace(/\D/g,"");else if(!/^https?:/i.test(href)){if(s.key==="instagram")href="https://instagram.com/"+href.replace("@","");if(s.key==="tiktok")href="https://tiktok.com/@"+href.replace("@","");}a.href=href;a.target="_blank";}})}
-    const section=document.querySelector(".services"); if(section&&savedSite.services?.length){section.innerHTML=`<h2>Serviços</h2>`+savedSite.services.map(s=>`<div class="service-card"><img src="${s.image||"/img/disfarcado.jpg"}" alt="${s.name}"><div class="service-info"><h3>${s.name}</h3><p>${s.description||""}</p><div class="details"><span>${s.duration} min</span><span>R$ ${s.price}</span></div><a href="#" class="schedule-btn">Agendar</a></div></div>`).join("");}
-  }
-  const services = [...document.querySelectorAll(".service-card")].map((card, index) => {
-    const details = card.querySelectorAll(".details span");
-    return {
-      index,
-      name: card.querySelector("h3")?.textContent.trim() || "Serviço",
-      description: card.querySelector("p")?.textContent.trim() || "",
-      duration: details[0]?.textContent.replace("⏱","").trim() || "",
-      price: details[1]?.textContent.replace("💰","").trim() || ""
-    };
-  });
+import { esc, brl, fmtTime, fmtDate, WEEKDAYS_SHORT, weekday, isValidPhone, normalizePhone, fmtPhone, maskPhoneInput, errorMessage, safeUrl, socialUrl, waLink } from "/js/ui.js";
+import { slugFromUrl, loadPublicShop, getSlots, book, prosForService, upcomingDays, themeColors, applySiteTheme, unavailableText } from "/js/public-api.js";
 
+const app = document.getElementById("app");
+const slug = slugFromUrl();
+
+function fail(text) {
+  app.innerHTML = `<div class="public-state"><div><h1 style="font-size:20px">Agendamento online</h1><p>${esc(text)}</p><p style="margin-top:20px;font-size:11px"><a href="https://visionariodev.com.br" target="_blank" rel="noopener" style="color:inherit">Desenvolvido por Visionário Dev</a></p></div></div>`;
+}
+
+let data;
+try {
+  data = await loadPublicShop(slug, "site");
+} catch (e) {
+  fail(errorMessage(e, "Não foi possível carregar a página. Verifique sua conexão."));
+}
+if (data && !data.available) fail(unavailableText(data.reason));
+if (data?.available) render();
+
+function render() {
+  const { shop } = data;
+  const tz = shop.timezone || "America/Sao_Paulo";
+  applySiteTheme(themeColors(shop));
+  document.title = `${shop.name} | Agendar horário`;
+  app.replaceChildren(document.getElementById("pageTpl").content.cloneNode(true));
+  const $ = id => document.getElementById(id);
+
+  $("pName").textContent = shop.name;
+  if (shop.is_demo) $("pName").insertAdjacentHTML("afterend", '<span class="demo-badge">Demonstração</span>');
+  const logo = safeUrl(shop.logo_url); if (logo) $("pLogo").src = logo; $("pLogo").alt = `Logo ${shop.name}`;
+  $("pStatus").querySelector("span").textContent = shop.public_status_text || "Aberto agora";
+  if (/fechad|férias/i.test(shop.public_status_text || "")) $("pStatus").classList.remove("aberto");
+  const sp = data.today?.special;
+  const h = data.hours.find(x => x.weekday === weekday(data.today.date));
+  $("pHours").textContent = sp ? (sp.is_closed ? "Fechado hoje" : `${sp.opens_at.slice(0, 5)} — ${sp.closes_at.slice(0, 5)}`) : h?.is_open ? `${h.opens_at.slice(0, 5)} — ${h.closes_at.slice(0, 5)}` : "Fechado hoje";
+  if (shop.address) $("pAddress").textContent = shop.address; else $("pAddressCard").hidden = true;
+  $("pServicesCount").textContent = `${data.services.length} disponíveis`;
+
+  // redes
+  const links = { instagram: socialUrl("instagram", shop.instagram), whatsapp: shop.whatsapp ? waLink(shop.whatsapp) : "", facebook: socialUrl("facebook", shop.facebook), tiktok: socialUrl("tiktok", shop.tiktok) };
+  $("pSocial").querySelectorAll("[data-k]").forEach(a => { const u = links[a.dataset.k]; if (u) a.href = u; else a.remove(); });
+  if (!$("pSocial").children.length) $("pSocial").remove();
+
+  // serviços
+  $("pServices").innerHTML = "<h2>Serviços</h2>" + (data.services.length ? data.services.map((s, i) => `<div class="service-card">
+      <img src="${esc(safeUrl(s.image_url) || "/img/disfarcado.jpg")}" alt="${esc(s.name)}" loading="lazy">
+      <div class="service-info"><h3>${esc(s.name)}</h3><p>${esc(s.description || "")}</p>
+      <div class="details"><span>${s.duration_minutes >= 60 && s.duration_minutes % 60 === 0 ? s.duration_minutes / 60 + "h" : s.duration_minutes + " min"}</span><span>${brl(s.price)}</span></div>
+      <a href="#" class="schedule-btn" data-service="${i}">Agendar</a></div></div>`).join("") : `<p style="color:var(--site-muted)">Nenhum serviço disponível no momento.</p>`);
+
+  // avaliações e mapa
+  const rating = Number(shop.google_rating);
+  if (rating > 0 || shop.review_link) {
+    $("pStars").innerHTML = Array.from({ length: 5 }, (_, i) => `<span style="opacity:${i < Math.round(rating) ? 1 : .3}">★</span>`).join("");
+    $("pStars").setAttribute("aria-label", `${rating.toFixed(1)} de 5 estrelas`);
+    $("pRating").textContent = rating > 0 ? `${rating.toFixed(1)} no Google` : "Avalie no Google";
+    const rl = safeUrl(shop.review_link); if (rl) $("pReviewBtn").href = rl; else $("pReviewBtn").remove();
+  } else $("pReviews").remove();
+  const maps = safeUrl(shop.maps_link) || (shop.address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(shop.address)}` : "");
+  if (shop.address) {
+    $("pMap").innerHTML = `<iframe title="Mapa de ${esc(shop.name)}" src="https://www.google.com/maps?q=${encodeURIComponent(shop.address)}&output=embed" width="100%" height="320" style="border:0" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>`;
+    $("pRoute").href = maps;
+  } else if (maps) { $("pMap").remove(); $("pRoute").href = maps; }
+  else $("pLocation").remove();
+
+  // chatbot (mesma lógica, página dedicada)
+  if (shop.features?.chatbot) {
+    document.body.insertAdjacentHTML("beforeend", `<a class="chatbot-launch" href="/chatbot/?barbearia=${encodeURIComponent(slug)}">Conversar e agendar</a>`);
+  }
+
+  setupBooking(tz);
+}
+
+function setupBooking(tz) {
+  const { shop } = data;
   document.body.insertAdjacentHTML("beforeend", `
-    <div class="booking-overlay" id="bookingOverlay">
-      <div class="booking-modal">
-        <div class="booking-handle"></div>
-        <div class="booking-header"><div><small>${savedSite?.name||"Barbearia Vision"}</small><h2>Agendar horário</h2></div><button class="booking-close" aria-label="Fechar">×</button></div>
-        <div class="booking-progress"><span></span><span></span><span></span><span></span></div>
-        <div id="bookingContent"></div>
+    <div class="booking-overlay" id="bookingOverlay" role="dialog" aria-modal="true" aria-labelledby="bookingTitle">
+      <div class="booking-modal"><div class="booking-handle"></div>
+        <div class="booking-header"><div><small>${esc(shop.name)}</small><h2 id="bookingTitle">Agendar horário</h2></div><button type="button" class="booking-close" aria-label="Fechar">×</button></div>
+        <div class="booking-progress" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+        <div id="bookingContent" aria-live="polite"></div>
       </div>
     </div>`);
+  const overlay = document.getElementById("bookingOverlay"), content = document.getElementById("bookingContent");
+  let st = {};
 
-  const overlay=document.getElementById("bookingOverlay"), content=document.getElementById("bookingContent");
-  let state={service:null,date:null,time:null,name:"",phone:""};
-  const labels=["DOM","SEG","TER","QUA","QUI","SEX","SÁB"];
-  const times=["08:00","08:40","09:20","10:00","10:40","11:20","13:00","13:40","14:20","15:00","15:40","16:20","17:00"];
+  const progress = n => document.querySelectorAll(".booking-progress span").forEach((x, i) => x.classList.toggle("active", i < n));
+  const summary = () => `<div class="booking-selected"><b>${esc(st.service.name)}</b><small>${st.service.duration_minutes} min • ${brl(st.service.price)}${st.pro ? " • " + esc(st.pro.name) : ""}${st.slot ? " • " + fmtDate(st.slot.starts_at, tz) + " " + fmtTime(st.slot.starts_at, tz) : ""}</small></div>`;
+  const actions = (nextLabel, disabled = true) => `<div class="booking-actions"><button type="button" class="booking-back">Voltar</button>${nextLabel ? `<button type="button" class="booking-next" ${disabled ? "disabled" : ""}>${nextLabel}</button>` : ""}</div>`;
 
-  function progress(n){document.querySelectorAll(".booking-progress span").forEach((x,i)=>x.classList.toggle("active",i<n));}
-  function selectedService(){return `<div class="booking-selected"><b>${state.service.name}</b><small>${state.service.duration} • ${state.service.price}</small></div>`;}
-  function open(service=null){state={service,date:null,time:null,name:"",phone:""};overlay.classList.add("open");document.body.classList.add("booking-open");service?renderDate():renderServices();}
-  function close(){overlay.classList.remove("open");document.body.classList.remove("booking-open");}
+  function open(service = null) {
+    st = { name: st.name || "", phone: st.phone || "" };
+    overlay.classList.add("open"); document.body.classList.add("booking-open");
+    if (service) { st.service = service; proStep(); } else serviceStep();
+    setTimeout(() => content.querySelector("button")?.focus(), 50);
+  }
+  function close() { overlay.classList.remove("open"); document.body.classList.remove("booking-open"); }
 
-  function renderServices(){
+  function serviceStep() {
     progress(1);
-    content.innerHTML=`<p class="booking-step-title">Escolha o serviço</p><div class="booking-service-list">${services.map(s=>`
-      <button class="booking-service-option" data-service="${s.index}">
-        <div><b>${s.name}</b><small>${s.description}</small></div><span>${s.price}<small>${s.duration}</small></span>
-      </button>`).join("")}</div>`;
-    content.querySelectorAll("[data-service]").forEach(btn=>btn.onclick=()=>{state.service=services[+btn.dataset.service];renderDate();});
+    content.innerHTML = `<p class="booking-step-title">Escolha o serviço</p><div class="booking-service-list">${data.services.map((s, i) => `
+      <button type="button" class="booking-service-option" data-i="${i}"><div><b>${esc(s.name)}</b><small>${esc(s.description || "")}</small></div><span>${brl(s.price)}<small>${s.duration_minutes} min</small></span></button>`).join("")}</div>`;
+    content.querySelectorAll("[data-i]").forEach(b => b.onclick = () => { st.service = data.services[+b.dataset.i]; st.pro = undefined; proStep(); });
   }
-
-  function renderDate(){
+  function proStep() {
+    const pros = prosForService(data, st.service.id);
+    if (pros.length <= 1) { st.pro = pros[0] || null; st.skipPro = true; return dateStep(); }
+    st.skipPro = false;
     progress(2);
-    let days="", cursor=new Date(), count=0;
-    while(count<7){
-      const d=new Date(cursor); d.setDate(cursor.getDate()+count);
-      if(d.getDay()!==0){
-        const key=d.toISOString().slice(0,10), today=count===0;
-        days+=`<button class="booking-day" data-date="${key}" data-label="${today?"HOJE":labels[d.getDay()]} ${d.getDate()}"><b>${today?"HOJE":labels[d.getDay()]}</b><small>${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}</small></button>`;
+    content.innerHTML = summary() + `<p class="booking-step-title">Escolha o profissional</p><div class="booking-service-list">
+      <button type="button" class="booking-service-option" data-p="-1"><div><b>Sem preferência</b><small>Primeiro profissional disponível</small></div></button>
+      ${pros.map((p, i) => `<button type="button" class="booking-service-option" data-p="${i}"><div style="display:flex;gap:10px;align-items:center">${safeUrl(p.photo_url) ? `<img class="booking-pro-photo" src="${esc(safeUrl(p.photo_url))}" alt="">` : ""}<div><b>${esc(p.name)}</b><small>${esc(p.specialty || "")}</small></div></div></button>`).join("")}</div>${actions(null)}`;
+    content.querySelectorAll("[data-p]").forEach(b => b.onclick = () => { st.pro = +b.dataset.p < 0 ? null : pros[+b.dataset.p]; dateStep(); });
+    content.querySelector(".booking-back").onclick = serviceStep;
+  }
+  function dateStep() {
+    progress(3); st.slot = null;
+    const days = upcomingDays(data, 14);
+    content.innerHTML = summary() + `<p class="booking-step-title">Escolha o dia</p><div class="booking-days">${days.map(d => `
+      <button type="button" class="booking-day" data-d="${d.key}"><b>${d.today ? "HOJE" : WEEKDAYS_SHORT[weekday(d.key)]}</b><small>${d.key.slice(8)}/${d.key.slice(5, 7)}</small></button>`).join("") || '<p style="color:var(--site-muted)">Sem dias disponíveis.</p>'}</div>${actions(null)}`;
+    content.querySelectorAll("[data-d]").forEach(b => b.onclick = () => { st.date = b.dataset.d; timeStep(); });
+    content.querySelector(".booking-back").onclick = () => (st.skipPro ? serviceStep() : proStep());
+  }
+  async function timeStep() {
+    progress(4);
+    content.innerHTML = summary() + `<p class="booking-step-title">Horários disponíveis · ${fmtDate(st.date + "T12:00:00Z", "UTC", { weekday: "long", day: "2-digit", month: "2-digit" })}</p><div class="booking-times"><span class="ui-spinner"></span></div>${actions("Continuar")}`;
+    content.querySelector(".booking-back").onclick = dateStep;
+    const box = content.querySelector(".booking-times");
+    let slots;
+    try { slots = await getSlots(slug, st.service.id, st.date, st.pro?.id, "site"); }
+    catch (e) { box.innerHTML = `<p class="booking-error">${esc(errorMessage(e))}</p>`; return; }
+    if (!slots.length) { box.innerHTML = `<p class="booking-demo-note">Nenhum horário livre neste dia. Escolha outro dia.</p>`; return; }
+    box.innerHTML = slots.map((s, i) => `<button type="button" class="booking-time" data-s="${i}" aria-pressed="false">${fmtTime(s.starts_at, tz)}</button>`).join("");
+    const next = content.querySelector(".booking-next");
+    box.querySelectorAll("[data-s]").forEach(b => b.onclick = () => {
+      box.querySelectorAll(".booking-time").forEach(x => { x.classList.remove("active"); x.setAttribute("aria-pressed", "false"); });
+      b.classList.add("active"); b.setAttribute("aria-pressed", "true"); st.slot = slots[+b.dataset.s]; next.disabled = false;
+    });
+    next.onclick = dataStep;
+  }
+  function dataStep() {
+    progress(5);
+    content.innerHTML = summary() + `<p class="booking-step-title">Seus dados</p>
+      <label class="booking-label">Nome<input id="bName" autocomplete="name" maxlength="80" placeholder="Ex.: João Silva" value="${esc(st.name)}"></label>
+      <label class="booking-label">WhatsApp<input id="bPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="(21) 99999-9999" value="${esc(st.phone)}"></label>
+      <p class="booking-error" id="bErr" role="alert"></p>${actions("Revisar agendamento", false)}`;
+    maskPhoneInput(document.getElementById("bPhone"));
+    content.querySelector(".booking-back").onclick = timeStep;
+    content.querySelector(".booking-next").onclick = () => {
+      st.name = document.getElementById("bName").value.trim().replace(/\s+/g, " ");
+      st.phone = document.getElementById("bPhone").value.trim();
+      const err = document.getElementById("bErr");
+      if (st.name.length < 2 || /[<>{}]/.test(st.name)) return (err.textContent = "Informe seu nome.");
+      if (!isValidPhone(st.phone)) return (err.textContent = "Informe um WhatsApp válido com DDD.");
+      reviewStep();
+    };
+  }
+  function reviewStep() {
+    progress(6);
+    const proName = st.pro?.name || data.professionals.find(p => p.id === st.slot.professional_id)?.name;
+    content.innerHTML = `<p class="booking-step-title">Confira seu agendamento</p><div class="booking-summary"><b>${esc(st.service.name)}</b>
+      <span>📅 ${fmtDate(st.slot.starts_at, tz, { weekday: "long", day: "2-digit", month: "2-digit" })}</span><span>🕒 ${fmtTime(st.slot.starts_at, tz)}</span>
+      <span>⏱ ${st.service.duration_minutes} min</span><span>💰 ${brl(st.service.price)}</span>${proName ? `<span>💈 ${esc(proName)}</span>` : ""}
+      <span>👤 ${esc(st.name)}</span><span>📱 ${fmtPhone(normalizePhone(st.phone))}</span></div>
+      <p class="booking-error" id="bErr" role="alert"></p>${actions("Confirmar agendamento", false)}`;
+    content.querySelector(".booking-back").onclick = dataStep;
+    const btn = content.querySelector(".booking-next");
+    btn.onclick = async () => {
+      btn.disabled = true; btn.textContent = "Confirmando...";
+      try {
+        const r = await book({ slug, serviceId: st.service.id, startsAt: st.slot.starts_at, name: st.name, whatsapp: st.phone, professionalId: st.pro?.id || st.slot.professional_id, channel: "site" });
+        success(r);
+      } catch (e) {
+        document.getElementById("bErr").textContent = errorMessage(e);
+        btn.disabled = false; btn.textContent = "Confirmar agendamento";
+        if (String(e?.message).includes("SLOT_UNAVAILABLE")) { btn.textContent = "Escolher outro horário"; btn.onclick = timeStep; }
       }
-      count++;
-    }
-    content.innerHTML=selectedService()+`<p class="booking-step-title">Escolha o dia</p><div class="booking-days">${days}</div><div class="booking-actions"><button class="booking-back">Voltar</button><button class="booking-next" disabled>Ver horários</button></div>`;
-    const next=content.querySelector(".booking-next");
-    content.querySelectorAll(".booking-day").forEach(btn=>btn.onclick=()=>{content.querySelectorAll(".booking-day").forEach(x=>x.classList.remove("active"));btn.classList.add("active");state.date={key:btn.dataset.date,label:btn.dataset.label};next.disabled=false;});
-    content.querySelector(".booking-back").onclick=renderServices; next.onclick=renderTime;
+    };
+  }
+  function success(r) {
+    progress(6);
+    const when = `${fmtDate(r.starts_at, tz, { weekday: "long", day: "2-digit", month: "2-digit" })} às ${fmtTime(r.starts_at, tz)}`;
+    const wa = data.shop.whatsapp ? waLink(data.shop.whatsapp, `Olá! Acabei de agendar ${r.service_name} para ${when} pelo site. Nome: ${st.name}.`) : "";
+    content.innerHTML = `<div class="booking-success"><div>✓</div><h3>Agendamento confirmado!</h3><p>${esc(r.service_name)}<br>${esc(when)}${r.professional_name ? `<br>com ${esc(r.professional_name)}` : ""}</p>
+      <small>Guarde esta informação. Para remarcar ou cancelar, fale com a barbearia.</small>
+      ${wa ? `<a class="booking-next" href="${wa}" target="_blank" rel="noopener" style="text-decoration:none;display:block;text-align:center;margin-top:10px">Avisar a barbearia no WhatsApp</a>` : ""}
+      <button type="button" class="booking-back" style="margin-top:8px;width:100%">Fechar</button></div>`;
+    content.querySelector(".booking-back").onclick = close;
   }
 
-  function renderTime(){
-    progress(3);
-    content.innerHTML=`<div class="booking-selected"><b>${state.service.name}</b><small>${state.date.label} • ${state.service.duration}</small></div><p class="booking-step-title">Horários disponíveis</p><div class="booking-times">${times.map((t,i)=>`<button class="booking-time" ${i===3||i===8?"disabled":""} data-time="${t}">${t}</button>`).join("")}</div><p class="booking-demo-note">Horários indisponíveis estão bloqueados. Nesta prévia, a disponibilidade ainda é demonstrativa.</p><div class="booking-actions"><button class="booking-back">Voltar</button><button class="booking-next" disabled>Continuar</button></div>`;
-    const next=content.querySelector(".booking-next");
-    content.querySelectorAll(".booking-time:not(:disabled)").forEach(btn=>btn.onclick=()=>{content.querySelectorAll(".booking-time").forEach(x=>x.classList.remove("active"));btn.classList.add("active");state.time=btn.dataset.time;next.disabled=false;});
-    content.querySelector(".booking-back").onclick=renderDate;next.onclick=renderData;
-  }
-
-  function renderData(){
-    progress(4);
-    content.innerHTML=`<div class="booking-selected"><b>${state.date.label} às ${state.time}</b><small>${state.service.name} • ${state.service.price}</small></div><p class="booking-step-title">Seus dados</p><label class="booking-label">Nome<input id="bookingName" placeholder="Ex.: João Silva" value="${state.name}"></label><label class="booking-label">WhatsApp<input id="bookingPhone" inputmode="tel" placeholder="(21) 99999-9999" value="${state.phone}"></label><div class="booking-actions"><button class="booking-back">Voltar</button><button class="booking-next">Revisar agendamento</button></div>`;
-    content.querySelector(".booking-back").onclick=renderTime;
-    content.querySelector(".booking-next").onclick=()=>{state.name=document.getElementById("bookingName").value.trim();state.phone=document.getElementById("bookingPhone").value.trim();if(!state.name||!state.phone){alert("Preencha seu nome e WhatsApp.");return;}renderConfirm();};
-  }
-
-  function renderConfirm(){
-    progress(4);
-    content.innerHTML=`<p class="booking-step-title">Confira seu agendamento</p><div class="booking-summary"><b>${state.service.name}</b><span>📅 ${state.date.label}</span><span>🕒 ${state.time}</span><span>⏱ ${state.service.duration}</span><span>💰 ${state.service.price}</span><span>👤 ${state.name}</span><span>📱 ${state.phone}</span></div><div class="booking-actions"><button class="booking-back">Voltar</button><button class="booking-next">Confirmar agendamento</button></div>`;
-    content.querySelector(".booking-back").onclick=renderData;
-    content.querySelector(".booking-next").onclick=()=>{content.innerHTML=`<div class="booking-success"><div>✓</div><h3>Agendamento confirmado!</h3><p>${state.service.name}<br>${state.date.label} às ${state.time}</p><small>Prévia visual: o salvamento no banco será conectado na próxima etapa.</small><button class="booking-next">Fechar</button></div>`;content.querySelector(".booking-next").onclick=close;};
-  }
-
-  document.querySelector(".main-schedule-btn")?.addEventListener("click",e=>{e.preventDefault();open();});
-  document.querySelectorAll(".schedule-btn").forEach((btn,i)=>btn.addEventListener("click",e=>{e.preventDefault();open(services[i]);}));
-  document.querySelector(".booking-close").onclick=close;
-  overlay.addEventListener("click",e=>{if(e.target===overlay)close();});
-  document.addEventListener("keydown",e=>{if(e.key==="Escape")close();});
-
-  // Chatbot: protótipo front-end, sem banco.
-  const botCfg=savedSite?.chatbot||{enabled:true,name:"Assistente Barber",greeting:"Olá! Vou te ajudar a agendar seu horário."};
-  if(botCfg.enabled!==false){
-    document.body.insertAdjacentHTML("beforeend",`
-      <button class="chatbot-launch" id="chatbotLaunch">${botCfg.button||"Conversar e agendar"}</button>
-      <section class="chatbot-panel" id="chatbotPanel">
-        <div class="chatbot-head"><div><b>${botCfg.name||"Assistente Barber"}</b><small>Agendamento online</small></div><button id="chatbotClose">×</button></div>
-        <div class="chatbot-messages" id="chatMessages"></div>
-        <div class="chat-options" id="chatOptions"></div>
-        <div class="chat-inputbar hidden" id="chatInputbar"><input id="chatInput" autocomplete="off"><button id="chatSend">Enviar</button></div>
-      </section>`);
-    const panel=document.getElementById("chatbotPanel"),msgs=document.getElementById("chatMessages"),opts=document.getElementById("chatOptions"),bar=document.getElementById("chatInputbar"),input=document.getElementById("chatInput");
-    let chat={step:"name",name:"",phone:"",service:null,date:null,time:null};
-    const say=(txt,user=false)=>{msgs.insertAdjacentHTML("beforeend",`<div class="chat-msg ${user?"user":""}">${txt}</div>`);msgs.scrollTop=msgs.scrollHeight};
-    const askInput=(placeholder,cb)=>{opts.innerHTML="";bar.classList.remove("hidden");input.placeholder=placeholder;input.value="";input.focus();const send=()=>{const v=input.value.trim();if(!v)return;say(v,true);bar.classList.add("hidden");cb(v)};document.getElementById("chatSend").onclick=send;input.onkeydown=e=>{if(e.key==="Enter")send()}};
-    const choose=(items,cb)=>{bar.classList.add("hidden");opts.innerHTML=items.map((x,i)=>`<button data-i="${i}">${x.label}</button>`).join("");opts.querySelectorAll("button").forEach(b=>b.onclick=()=>{const x=items[+b.dataset.i];say(x.label,true);opts.innerHTML="";cb(x.value)})};
-    function startChat(){msgs.innerHTML="";opts.innerHTML="";chat={};say(botCfg.greeting||"Olá! Vou te ajudar a agendar seu horário.");setTimeout(()=>{say("Qual é o seu nome?");askInput("Digite seu nome",v=>{chat.name=v;say(`Prazer, ${v}! Qual é o seu WhatsApp com DDD?`);askInput("(21) 99999-9999",v2=>{chat.phone=v2;chatService()})})},250)}
-    function chatService(){say("Qual serviço você quer agendar?");choose(services.map(s=>({label:`${s.name} — ${s.price} · ${s.duration}`,value:s})),s=>{chat.service=s;chatDate()})}
-    function chatDate(){say("Escolha o dia.");const arr=[];let d=new Date();for(let i=0;i<7;i++){const x=new Date(d);x.setDate(d.getDate()+i);if(x.getDay()!==0)arr.push({label:`${i===0?"Hoje":labels[x.getDay()]} · ${String(x.getDate()).padStart(2,"0")}/${String(x.getMonth()+1).padStart(2,"0")}`,value:{key:x.toISOString().slice(0,10),label:i===0?"Hoje":labels[x.getDay()]+" "+x.getDate()}})}choose(arr,v=>{chat.date=v;chatTime()})}
-    function chatTime(){say("Qual horário fica melhor?");choose(times.filter((_,i)=>i!==3&&i!==8).map(t=>({label:t,value:t})),t=>{chat.time=t;chatReview()})}
-    function chatReview(){say(`Confira: <b>${chat.service.name}</b><br>${chat.date.label} às ${chat.time}<br>${chat.name} · ${chat.phone}`);choose([{label:"Confirmar agendamento",value:true},{label:"Começar novamente",value:false}],ok=>{if(ok){say("Agendamento confirmado nesta prévia ✓");say("Quando conectarmos o Supabase, é aqui que ele será salvo na agenda.");opts.innerHTML='<button id="chatAgain">Fazer outro agendamento</button>';document.getElementById("chatAgain").onclick=startChat}else startChat()})}
-    document.getElementById("chatbotLaunch").onclick=()=>{panel.classList.add("open");if(!msgs.children.length)startChat()};
-    document.getElementById("chatbotClose").onclick=()=>panel.classList.remove("open");
-  }
-});
+  document.getElementById("mainBook").addEventListener("click", e => { e.preventDefault(); if (data.services.length) open(); });
+  document.querySelectorAll(".schedule-btn").forEach(b => b.addEventListener("click", e => { e.preventDefault(); open(data.services[+b.dataset.service]); }));
+  overlay.querySelector(".booking-close").onclick = close;
+  overlay.addEventListener("click", e => { if (e.target === overlay) close(); });
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && overlay.classList.contains("open")) close(); });
+  if (new URLSearchParams(location.search).has("agendar")) open();
+}
