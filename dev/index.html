@@ -1,1 +1,50 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Painel DEV | BarberSaaS</title><style>*{box-sizing:border-box}body{margin:0;background:#07111f;color:#fff;font-family:Poppins,Arial;padding:28px}.wrap{max-width:1100px;margin:auto}header{display:flex;justify-content:space-between;gap:15px;align-items:center}h1 span{color:#08a9df}button,input,select{padding:11px;border-radius:9px;border:1px solid #29405d;background:#0d1a2b;color:#fff}button{cursor:pointer}.primary{background:#08a9df;color:#04101a;font-weight:700}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:25px 0}.stat,.shop,.formbox{background:#101c2e;border:1px solid #20334d;border-radius:16px;padding:18px}.stat b{font-size:26px;display:block}.shops{display:grid;gap:10px}.shop{display:flex;justify-content:space-between;align-items:center;gap:12px}.shop small{display:block;color:#8fa3bc}.actions{display:flex;gap:8px;flex-wrap:wrap}.formbox{display:none;margin-bottom:18px}.formbox.open{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.formbox h2{grid-column:1/-1}.formbox .full{grid-column:1/-1}@media(max-width:700px){body{padding:16px}.stats{grid-template-columns:1fr 1fr}.shop{align-items:flex-start;flex-direction:column}.formbox.open{grid-template-columns:1fr}.formbox h2,.formbox .full{grid-column:auto}}</style></head><body><main class="wrap"><header><div><h1>Barber<span>SaaS</span> DEV</h1><p>Visionário Dev • Administração da plataforma</p></div><div><button id="logout">Sair</button> <button class="primary" id="newShop">+ Nova barbearia</button></div></header><section class="stats" id="stats"></section><section class="formbox" id="formbox"><h2>Nova barbearia</h2><input id="name" placeholder="Nome da barbearia"><input id="slug" placeholder="slug-da-barbearia"><input id="owner" placeholder="Responsável"><input id="phone" placeholder="WhatsApp"><select id="plan"><option value="complete">Completo</option><option value="site">Site</option><option value="chatbot">Chatbot</option></select><select id="status"><option value="active">Ativo</option><option value="suspended">Suspenso</option></select><button class="primary full" id="saveShop">Criar barbearia</button></section><section class="shops" id="shops"></section></main><script type="module" src="dev.js"></script></body></html>
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Painel DEV | BarberSaaS</title>
+<!-- pwa-head -->
+<link rel="stylesheet" href="/ui.css">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}body{background:#07111f;color:#fff;font-family:Poppins,Arial,sans-serif;padding:28px;min-height:100vh}
+.wrap{max-width:1150px;margin:auto}header{display:flex;justify-content:space-between;gap:15px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+h1 span{color:#08a9df}header p{color:#8fa3bc;font-size:13px}.head-actions{display:flex;gap:8px;flex-wrap:wrap}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin:22px 0}
+.stat,.shop{background:#101c2e;border:1px solid #20334d;border-radius:16px;padding:16px}
+.stat small{color:#8fa3bc}.stat b{font-size:24px;display:block}
+.toolbar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.toolbar input,.toolbar select{background:#0d1a2b;border:1px solid #29405d;color:#fff;border-radius:10px;padding:11px;min-height:44px;font:14px Poppins,sans-serif}
+.toolbar input{flex:1;min-width:200px}
+.shops{display:grid;gap:10px}
+.shop{display:grid;grid-template-columns:1.4fr 1fr auto;gap:14px;align-items:center}
+.shop small{display:block;color:#8fa3bc;font-size:12px}
+.shop .meta{font-size:12px;color:#cbd5e1;display:grid;gap:2px}
+.actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;margin-left:6px;vertical-align:middle}
+.st-active{background:#14532d;color:#bbf7d0}.st-demo{background:#3b2a07;color:#fde68a}.st-suspended{background:#4c1d1d;color:#fecaca}.st-cancelled{background:#334155;color:#cbd5e1}
+.pl{background:#12394b;color:#7dd3fc}
+.members{display:grid;gap:6px;margin-top:6px}.members div{background:#0f172a;border-radius:9px;padding:8px 10px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:13px}
+.credit{text-align:center;margin-top:24px;font-size:11px}.credit a{color:#718096;text-decoration:none}
+@media(max-width:800px){body{padding:16px}.stats{grid-template-columns:1fr 1fr}.shop{grid-template-columns:1fr}.actions{justify-content:flex-start}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header>
+    <div><h1>Barber<span>SaaS</span> DEV</h1><p>Visionário Dev • Administração da plataforma</p></div>
+    <div class="head-actions"><button class="ui-btn" id="logout" type="button">Sair</button><button class="ui-btn primary" id="newShop" type="button">+ Nova barbearia</button></div>
+  </header>
+  <section class="stats" id="stats" aria-live="polite"></section>
+  <div class="toolbar">
+    <label class="sr-only" for="search">Pesquisar</label><input id="search" type="search" placeholder="Pesquisar por nome, slug, responsável, e-mail ou WhatsApp">
+    <label class="sr-only" for="fStatus">Status</label><select id="fStatus"><option value="">Todos os status</option><option value="active">Ativas</option><option value="demo">Demo</option><option value="suspended">Suspensas</option><option value="cancelled">Canceladas</option></select>
+    <label class="sr-only" for="fPlan">Plano</label><select id="fPlan"><option value="">Todos os planos</option><option value="complete">Completo</option><option value="site">Site</option><option value="chatbot">Chatbot</option></select>
+  </div>
+  <section class="shops" id="shops"></section>
+  <div class="credit"><a href="https://visionariodev.com.br" target="_blank" rel="noopener">Desenvolvido por Visionário Dev</a></div>
+</main>
+<script type="module" src="dev.js"></script>
+</body>
+</html>
