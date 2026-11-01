@@ -8,3 +8,4 @@ supabase/.branches/
 *.log
 test-results/
 .DS_Store
+dist/
