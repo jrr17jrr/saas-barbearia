@@ -42,3 +42,16 @@ test('erros do banco viram mensagens amigáveis sem detalhes internos', () => {
   assert.match(errorMessage(new Error('Failed to fetch')), /conexão/);
   assert.equal(esc('<b a="1">'), '&lt;b a=&quot;1&quot;&gt;');
 });
+
+// Regressão (produção 2026-11-03): com trailingSlash=false a Vercel redirecionava /login/ → /login
+// e todos os assets relativos (login.js, dashboard.css...) davam 404.
+test('vercel.json mantém a barra final quando as páginas usam assets relativos', async () => {
+  const { readFileSync, readdirSync, existsSync } = await import('node:fs');
+  const cfg = JSON.parse(readFileSync(new URL('../vercel.json', import.meta.url), 'utf8'));
+  const pages = readdirSync(new URL('..', import.meta.url), { withFileTypes: true })
+    .filter(d => d.isDirectory() && existsSync(new URL(`../${d.name}/index.html`, import.meta.url)));
+  const relative = pages.filter(d => /(src|href)="(?!\/|https?:|#|mailto:|data:)[^"]+\.(js|css)"/.test(
+    readFileSync(new URL(`../${d.name}/index.html`, import.meta.url), 'utf8')));
+  assert.ok(relative.length > 0);
+  assert.equal(cfg.trailingSlash, true, `páginas com assets relativos: ${relative.map(d => d.name).join(', ')}`);
+});

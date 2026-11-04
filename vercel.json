@@ -4,7 +4,7 @@
   "buildCommand": "node scripts/build.js",
   "outputDirectory": "dist",
   "cleanUrls": false,
-  "trailingSlash": false,
+  "trailingSlash": true,
   "redirects": [
     {
       "source": "/configura%C3%A7%C3%B5es/:path*",
