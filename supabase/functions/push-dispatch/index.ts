@@ -33,7 +33,7 @@ Deno.serve(async req => {
         processed++; sent += r.sent;
       } catch (e) {
         log('push.dispatch.deliver_error', { outbox: o.id, error: String(e) });
-        await admin.rpc('dispatch_complete', { p_outbox_id: o.id, p_status: 'pending', p_sent: 0, p_error: String(e) });
+        await admin.rpc('dispatch_complete', { p_outbox_id: o.id, p_status: 'retry', p_sent: 0, p_error: String(e) });
       }
     }
   }

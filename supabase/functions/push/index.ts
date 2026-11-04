@@ -28,7 +28,7 @@ Deno.serve(async req => {
   }
   const admin = serviceClient();
   const { data: claimed } = await admin.from('notification_outbox')
-    .update({ status: 'processing', attempts: 1 }).eq('id', outboxId).eq('status', 'pending').select('*').maybeSingle();
+    .update({ status: 'processing', attempts: 1, claimed_at: new Date().toISOString() }).eq('id', outboxId).eq('status', 'pending').select('*').maybeSingle();
   if (!claimed) return json(req, { ok: true, queued: true }); // já pego pelo dispatcher
   const r = await deliver(admin, claimed);
   log('push.test', { user: user.userId, shop: body.shop_id, sent: r.sent, devices: r.results.length });

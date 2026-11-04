@@ -91,9 +91,15 @@ const ERRORS = {
   NO_DEVICE: "Ative as notificações neste aparelho primeiro.",
   SLUG_TAKEN: "Esse endereço (slug) já está em uso.",
   INVALID_RANGE: "Período inválido.",
+  INVALID_PLAN: "Plano inválido.",
+  INVALID_EMAIL: "Informe um e-mail válido.",
+  INVALID_SLUG: "Endereço (slug) inválido: use pelo menos 3 letras ou números.",
+  // Banco ainda sem as migrations novas (RPC/tabela inexistente no schema cache)
+  PGRST202: "O sistema está sendo atualizado. Tente novamente em alguns minutos.",
+  PGRST205: "O sistema está sendo atualizado. Tente novamente em alguns minutos.",
 };
 export function errorMessage(err, fallback = "Não foi possível concluir. Verifique sua conexão e tente novamente.") {
-  const msg = String(err?.message || err || "");
+  const msg = String(err?.message || err || "") + (err?.code ? " " + err.code : "");
   for (const code of Object.keys(ERRORS)) if (msg.includes(code)) return ERRORS[code];
   if (/Failed to fetch|NetworkError|network/i.test(msg)) return "Sem conexão com o servidor. Verifique a internet.";
   if (/foreign key|violates foreign/i.test(msg)) return "Este registro possui histórico vinculado e não pode ser excluído. Desative-o.";

@@ -47,15 +47,21 @@ export async function deliver(admin: SupabaseClient, o: Outbox): Promise<{ sent:
       return { subscription_id: t.subscription_id, ok: false, gone, status, error: String(e?.body || e?.message || e).slice(0, 300) };
     }
   }));
-  await Promise.all(results.map(r => admin.rpc('dispatch_subscription_result', {
-    p_subscription_id: r.subscription_id, p_ok: r.ok, p_gone: r.gone, p_error: r.error ?? null,
+  // Registra cada dispositivo: entregues ficam em notification_deliveries e NUNCA
+  // recebem o mesmo evento de novo; 404/410 removem a inscrição.
+  await Promise.all(results.map(r => admin.rpc('dispatch_record_delivery', {
+    p_outbox_id: o.id, p_subscription_id: r.subscription_id, p_ok: r.ok, p_gone: r.gone, p_error: r.error ?? null,
   })));
   const sent = results.filter(r => r.ok).length;
   const failed = results.filter(r => !r.ok && !r.gone);
-  const status = (targets ?? []).length === 0 ? 'skipped' : sent > 0 ? 'sent' : failed.length ? 'failed' : 'skipped';
-  await admin.rpc('dispatch_complete', {
-    p_outbox_id: o.id, p_status: status, p_sent: sent, p_error: failed[0]?.error ?? null,
+  // Falha temporária (5xx, 429, rede) em algum dispositivo → retry com backoff só para os que faltam.
+  const status = failed.length ? 'retry' : (targets ?? []).length === 0 ? 'skipped' : sent > 0 ? 'sent' : 'skipped';
+  const { data: finalStatus } = await admin.rpc('dispatch_complete', {
+    p_outbox_id: o.id, p_status: status, p_sent: sent, p_error: failed[0] ? `HTTP ${failed[0].status ?? '-'}: ${failed[0].error}` : null,
   });
-  log('push.outbox', { outbox: o.id, kind: o.kind, shop: o.barbershop_id, targets: (targets ?? []).length, sent, gone: results.filter(r => r.gone).length, failed: failed.length });
+  log('push.outbox', {
+    outbox: o.id, kind: o.kind, shop: o.barbershop_id, targets: (targets ?? []).length, sent,
+    gone: results.filter(r => r.gone).length, failed: failed.length, status: finalStatus ?? status,
+  });
   return { sent, results };
 }

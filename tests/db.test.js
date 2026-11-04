@@ -454,7 +454,7 @@ test('push: subscription salva, alvo respeita tenant/preferências e inválida �
   await as(db, { role: 'authenticated', uid: ownerA }, tx => tx.query(`update public.notification_preferences set new_booking = false where user_id = $1`, [ownerA]));
   t = await db.query('select * from public.dispatch_targets($1)', [outbox]);
   assert.equal(t.rows.length, 0);
-  await db.query('select public.dispatch_subscription_result($1, false, true)', [subId]);
+  await db.query('select public.dispatch_record_delivery($1, $2, false, true)', [outbox, subId]);
   assert.equal((await db.query(`select count(*)::int c from public.push_subscriptions where id = $1`, [subId])).rows[0].c, 0);
 });
 
@@ -516,4 +516,97 @@ test('dados legados preservados (Barbearia Vision continua com serviços e horá
   assert.ok(!('owner_name' in r.rows[0].j.shop), 'não expõe dados privados');
   const h = await db.query(`select count(*)::int c from public.business_hours where barbershop_id = $1`, [VISION]);
   assert.equal(h.rows[0].c, 7);
+});
+
+// ------------------------------------------------------------------ Regressões (sessão 2026-11-03)
+test('cargo legado "barber" é preservado; "staff" é recusado; só um check de cargo', async () => {
+  const r = await db.query(`select role from public.barbershop_members where user_id = '00000000-0000-4000-8000-0000000000b1'`);
+  assert.equal(r.rows[0].role, 'barber');
+  const u = await createUser(db, 'staff.legado@example.com');
+  await expectError(db.query(`insert into public.barbershop_members (barbershop_id, user_id, role) values ($1, $2, 'staff')`, [VISION, u]), /check constraint/);
+  await db.query(`insert into public.barbershop_members (barbershop_id, user_id, role) values ($1, $2, 'barber')`, [VISION, u]);
+  const defs = (await db.query(`select pg_get_constraintdef(oid) d from pg_constraint where conrelid = 'public.barbershop_members'::regclass and contype = 'c'`)).rows;
+  assert.equal(defs.length, 1, 'apenas um check de cargo (legado removido)');
+  assert.match(defs[0].d, /barber/);
+  await db.query(`delete from public.barbershop_members where user_id = $1`, [u]);
+});
+
+test('admin_create_barbershop: padrões, inválidos recusados, demo marca is_demo', async () => {
+  await as(db, { role: 'authenticated', uid: adminId }, async tx => {
+    const a = (await tx.query(`select * from public.admin_create_barbershop(p_name => 'Padrao Ltda', p_plan => null, p_status => null)`)).rows[0];
+    assert.equal(a.status, 'active'); assert.equal(a.plan, 'complete'); assert.equal(a.is_demo, false);
+    const d = (await rpc(tx, 'admin_create_barbershop', { p_name: 'Demo Shop', p_status: 'demo' })).rows[0];
+    assert.equal(d.is_demo, true);
+  });
+  await expectError(as(db, { role: 'authenticated', uid: adminId }, tx => rpc(tx, 'admin_create_barbershop', { p_name: 'X Plano', p_plan: 'gold' })), /INVALID_PLAN/);
+  await expectError(as(db, { role: 'authenticated', uid: adminId }, tx => rpc(tx, 'admin_create_barbershop', { p_name: 'X Email', p_owner_email: 'sem-arroba' })), /INVALID_EMAIL/);
+  await expectError(as(db, { role: 'authenticated', uid: adminId }, tx => tx.query(`select public.admin_update_barbershop($1, '{"status":"hacked"}'::jsonb)`, [shopB.id])), /INVALID_STATUS/);
+});
+
+test('barbearia suspensa: dono vê o contexto (aviso) mas nenhum dado; reativar devolve acesso', async () => {
+  await as(db, { role: 'authenticated', uid: adminId }, tx => tx.query(`select public.admin_update_barbershop($1, '{"status":"suspended"}'::jsonb)`, [shopB.id]));
+  const ctx = await as(db, { role: 'authenticated', uid: ownerB }, tx => rpc(tx, 'shop_context', { p_shop_id: shopB.id }));
+  assert.equal(ctx.rows[0].shop_context.status, 'suspended');
+  const svc = await as(db, { role: 'authenticated', uid: ownerB }, tx => tx.query('select count(*)::int c from public.services'));
+  assert.equal(svc.rows[0].c, 0);
+  await expectError(as(db, { role: 'authenticated', uid: ownerB }, tx => rpc(tx, 'shop_dashboard', { p_shop_id: shopB.id })), /FORBIDDEN/);
+  const pub = await as(db, { role: 'anon' }, tx => tx.query(`select public.get_public_shop($1) j`, [shopB.slug]));
+  assert.equal(pub.rows[0].j.available, false);
+  await as(db, { role: 'authenticated', uid: adminId }, tx => tx.query(`select public.admin_update_barbershop($1, '{"status":"active"}'::jsonb)`, [shopB.id]));
+  const back = await as(db, { role: 'authenticated', uid: ownerB }, tx => tx.query('select count(*)::int c from public.services'));
+  assert.ok(back.rows[0].c > 0);
+});
+
+test('push: retry não reenvia a quem já recebeu; esgotar tentativas → failed', async () => {
+  const save = ep => as(db, { role: 'authenticated', uid: ownerA }, async tx =>
+    (await rpc(tx, 'save_push_subscription', { p_shop_id: shopA.id, p_endpoint: ep, p_p256dh: 'k', p_auth: 'a' })).rows[0].save_push_subscription);
+  const s1 = await save('https://push.example/r1');
+  const s2 = await save('https://push.example/r2');
+  const id = Number((await db.query(`insert into public.notification_outbox (barbershop_id, kind, dedupe_key, title, body, target_user_id)
+    values ($1, 'test', 'retry-test', 'T', 'B', $2) returning id`, [shopA.id, ownerA])).rows[0].id);
+  const claimIds = async () => (await db.query('select id from public.dispatch_claim(500)')).rows.map(r => Number(r.id));
+  assert.ok((await claimIds()).includes(id));
+  let targets = (await db.query('select subscription_id from public.dispatch_targets($1)', [id])).rows.map(r => r.subscription_id);
+  assert.ok(targets.includes(s1) && targets.includes(s2));
+  await db.query('select public.dispatch_record_delivery($1, $2, true, false)', [id, s1]);
+  await db.query(`select public.dispatch_record_delivery($1, $2, false, false, 'HTTP 503')`, [id, s2]);
+  assert.equal((await db.query(`select public.dispatch_complete($1, 'retry', 1, 'HTTP 503') s`, [id])).rows[0].s, 'pending');
+  assert.ok(!(await claimIds()).includes(id), 'backoff respeitado');
+  await db.query(`update public.notification_outbox set next_attempt_at = now() - interval '1 second' where id = $1`, [id]);
+  assert.ok((await claimIds()).includes(id));
+  targets = (await db.query('select subscription_id from public.dispatch_targets($1)', [id])).rows.map(r => r.subscription_id);
+  assert.deepEqual(targets, [s2], 'somente o dispositivo que falhou recebe de novo');
+  await db.query(`update public.notification_outbox set attempts = 5 where id = $1`, [id]);
+  assert.equal((await db.query(`select public.dispatch_complete($1, 'retry', 0, 'x') s`, [id])).rows[0].s, 'failed');
+  assert.equal((await db.query(`select failure_count from public.push_subscriptions where id = $1`, [s2])).rows[0].failure_count, 1);
+});
+
+test('lembrete de agendamento cancelado é descartado antes do envio; texto correto', async () => {
+  const a = await as(db, { role: 'authenticated', uid: ownerA }, tx =>
+    rpc(tx, 'panel_create_appointment', { p_shop_id: shopA.id, p_service_id: svcA.id, p_starts_at: iso(day, '18:00'), p_client_name: 'Velho Horario', p_professional_id: proA1.id }));
+  const id = a.rows[0].id;
+  await db.query(`update public.appointments set starts_at = now() + interval '15 minutes', ends_at = now() + interval '45 minutes' where id = $1`, [id]);
+  await db.query('select private.enqueue_due_reminders()');
+  const rem = (await db.query(`select id, title, body from public.notification_outbox where appointment_id = $1 and kind = 'reminder'`, [id])).rows[0];
+  assert.equal(rem.title, 'Próximo atendimento');
+  assert.match(rem.body, /^Velho está agendado para daqui a \d+ minutos/);
+  await as(db, { role: 'authenticated', uid: ownerA }, tx => rpc(tx, 'set_appointment_status', { p_appointment_id: id, p_status: 'cancelled' }));
+  await db.query('select private.skip_stale_outbox()');
+  assert.equal((await db.query(`select status from public.notification_outbox where id = $1`, [rem.id])).rows[0].status, 'skipped');
+});
+
+test('texto do push de novo agendamento: "Fulano agendou X para ..."', async () => {
+  const o = (await db.query(`select title, body from public.notification_outbox where appointment_id = $1 and kind = 'new_booking'`, [publicAppt.id])).rows[0];
+  assert.equal(o.title, 'Novo agendamento!');
+  assert.match(o.body, /^\S+ agendou .+ para (hoje|amanhã|\d{2}\/\d{2}) às \d{2}:\d{2}\.$/);
+});
+
+test('fila e entregas: anon/dono não acessam; admin lê a fila para diagnóstico', async () => {
+  await expectError(as(db, { role: 'anon' }, tx => tx.query('select * from public.notification_outbox')), /permission denied/);
+  await expectError(as(db, { role: 'authenticated', uid: ownerA }, tx => tx.query('select * from public.notification_deliveries')), /permission denied/);
+  const own = await as(db, { role: 'authenticated', uid: ownerA }, tx => tx.query('select count(*)::int c from public.notification_outbox'));
+  assert.equal(own.rows[0].c, 0);
+  const adm = await as(db, { role: 'authenticated', uid: adminId }, tx => tx.query('select count(*)::int c from public.notification_outbox'));
+  assert.ok(adm.rows[0].c > 0);
+  await expectError(as(db, { role: 'authenticated', uid: ownerA }, tx => tx.query(`select public.dispatch_record_delivery(1, gen_random_uuid(), true, false)`)), /permission denied/);
 });

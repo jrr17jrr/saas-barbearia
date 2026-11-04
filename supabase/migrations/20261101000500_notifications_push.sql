@@ -80,12 +80,36 @@ create table if not exists public.notification_outbox (
   created_at timestamptz not null default now(),
   processed_at timestamptz
 );
+alter table public.notification_outbox add column if not exists claimed_at timestamptz;
+alter table public.notification_outbox add column if not exists next_attempt_at timestamptz not null default now();
 create index if not exists notification_outbox_pending_idx on public.notification_outbox(created_at) where status in ('pending', 'processing');
+
+-- Entregas por dispositivo: garante que um retry NUNCA reenvia para quem já recebeu
+-- (idempotência evento × dispositivo, mesmo com duas execuções do dispatcher).
+create table if not exists public.notification_deliveries (
+  outbox_id bigint not null references public.notification_outbox(id) on delete cascade,
+  subscription_id uuid not null references public.push_subscriptions(id) on delete cascade,
+  delivered_at timestamptz not null default now(),
+  primary key (outbox_id, subscription_id)
+);
+create index if not exists notification_deliveries_subscription_idx on public.notification_deliveries(subscription_id);
+alter table public.notification_deliveries enable row level security;
+revoke all on public.notification_deliveries from anon, authenticated;
+grant all on public.notification_deliveries to service_role;
 create index if not exists notification_outbox_shop_idx on public.notification_outbox(barbershop_id);
 create index if not exists notification_outbox_appointment_idx on public.notification_outbox(appointment_id);
 alter table public.notification_outbox enable row level security;
 revoke all on public.notification_outbox from anon, authenticated;
 grant all on public.notification_outbox to service_role;
+-- Diagnóstico: somente o admin DEV lê a fila (escrita apenas por funções/service_role)
+grant select on public.notification_outbox to authenticated;
+drop policy if exists notification_outbox_admin_select on public.notification_outbox;
+create policy notification_outbox_admin_select on public.notification_outbox for select to authenticated
+  using (private.is_platform_admin());
+grant select on public.booking_rate_events to authenticated;
+drop policy if exists booking_rate_events_admin_select on public.booking_rate_events;
+create policy booking_rate_events_admin_select on public.booking_rate_events for select to authenticated
+  using (private.is_platform_admin());
 
 -- Configuração interna (sem segredos em texto: segredos ficam no Vault)
 create table if not exists private.app_config (
@@ -131,19 +155,22 @@ begin
   v_who := coalesce(nullif(split_part(new.client_name, ' ', 1), ''), 'Cliente');
   if tg_op = 'INSERT' then
     if new.status = 'confirmed' then
-      perform private.enqueue_notification(new, 'new_booking', 'new:' || new.id, 'Novo agendamento',
-        coalesce(new.client_name, 'Cliente') || ' agendou ' || coalesce(new.service_name, 'um horário') || E'\n' ||
-        private.fmt_when(new.starts_at, v_tz), v_actor);
+      -- Ex.: "João agendou Corte + Barba para amanhã às 14:00."
+      perform private.enqueue_notification(new, 'new_booking', 'new:' || new.id, 'Novo agendamento!',
+        v_who || ' agendou ' || coalesce(new.service_name, 'um horário') || ' para ' ||
+        lower(private.fmt_when(new.starts_at, v_tz)) || '.', v_actor);
     end if;
   elsif new.status = 'cancelled' and old.status is distinct from 'cancelled' then
     perform private.enqueue_notification(new, 'cancellation', 'cancel:' || new.id || ':' || extract(epoch from now())::bigint,
       'Agendamento cancelado',
-      v_who || ' · ' || coalesce(new.service_name, '') || E'\n' || private.fmt_when(new.starts_at, v_tz), v_actor);
+      v_who || ' cancelou ' || coalesce(new.service_name, 'o horário') || ' de ' ||
+      lower(private.fmt_when(new.starts_at, v_tz)) || '.', v_actor);
   elsif new.status = 'confirmed' and (new.starts_at is distinct from old.starts_at or new.professional_id is distinct from old.professional_id) then
     perform private.enqueue_notification(new, 'reschedule',
       'resched:' || new.id || ':' || extract(epoch from new.starts_at)::bigint || ':' || new.professional_id,
       'Agendamento remarcado',
-      v_who || ' · ' || coalesce(new.service_name, '') || E'\nNovo horário: ' || private.fmt_when(new.starts_at, v_tz), v_actor);
+      v_who || ' · ' || coalesce(new.service_name, '') || ' agora ' ||
+      lower(private.fmt_when(new.starts_at, v_tz)) || '.', v_actor);
   end if;
   return null;
 end $$;
@@ -168,8 +195,10 @@ begin
   loop
     insert into public.notification_outbox (barbershop_id, appointment_id, kind, dedupe_key, title, body, url)
     values (r.barbershop_id, r.id, 'reminder', 'reminder:' || r.id || ':' || extract(epoch from r.starts_at)::bigint,
-      'Atendimento em ' || greatest(1, round(extract(epoch from (r.starts_at - now())) / 60))::int || ' min',
-      coalesce(r.client_name, 'Cliente') || ' · ' || coalesce(r.service_name, '') || E'\n' || to_char(r.starts_at at time zone r.timezone, 'HH24:MI'),
+      'Próximo atendimento',
+      coalesce(nullif(split_part(r.client_name, ' ', 1), ''), 'Cliente') || ' está agendado para daqui a ' ||
+        greatest(1, round(extract(epoch from (r.starts_at - now())) / 60))::int || ' minutos (' ||
+        coalesce(r.service_name, 'atendimento') || ' às ' || to_char(r.starts_at at time zone r.timezone, 'HH24:MI') || ').',
       '/agendamentos/?appointment=' || r.id || '&date=' || to_char(r.starts_at at time zone r.timezone, 'YYYY-MM-DD'))
     on conflict (dedupe_key) do nothing;
     update public.appointments set reminder_sent_at = now() where id = r.id;
@@ -219,8 +248,8 @@ begin
       and created_at > now() - interval '10 minutes') >= 5 then
     raise exception 'RATE_LIMIT' using errcode = 'P0001'; end if;
   insert into public.notification_outbox (barbershop_id, kind, dedupe_key, title, body, url, target_user_id)
-  values (p_shop_id, 'test', 'test:' || v_uid || ':' || gen_random_uuid(), 'Notificação de teste',
-    'Tudo certo! Este aparelho está recebendo as notificações do BarberSaaS.', '/configuracoes/#notificacoes', v_uid)
+  values (p_shop_id, 'test', 'test:' || v_uid || ':' || gen_random_uuid(), 'BarberSaaS',
+    'As notificações estão funcionando neste aparelho.', '/configuracoes/#notificacoes', v_uid)
   returning id into v_id;
   return v_id;
 end $$;
@@ -228,15 +257,42 @@ end $$;
 -- ---------------------------------------------------------------------
 -- RPCs para a Edge Function (somente service_role)
 -- ---------------------------------------------------------------------
+-- Máximo de tentativas por evento antes de marcar como 'failed'
+create or replace function private.outbox_max_attempts()
+returns int language sql immutable set search_path = '' as $$ select 5 $$;
+
+-- Descarta eventos que perderam o sentido antes do envio (ex.: lembrete de um
+-- agendamento cancelado/remarcado; aviso de novo agendamento já cancelado).
+create or replace function private.skip_stale_outbox()
+returns int language plpgsql security definer set search_path = '' as $$
+declare v int;
+begin
+  update public.notification_outbox o set status = 'skipped', processed_at = now(), last_error = 'stale'
+  from public.appointments a
+  where a.id = o.appointment_id and o.status = 'pending'
+    and ((o.kind = 'reminder' and (a.status <> 'confirmed'
+            or o.dedupe_key <> 'reminder:' || a.id || ':' || extract(epoch from a.starts_at)::bigint
+            or a.starts_at <= now()))
+      or (o.kind in ('new_booking', 'reschedule') and a.status = 'cancelled'));
+  get diagnostics v = row_count;
+  return v;
+end $$;
+
 create or replace function public.dispatch_claim(p_limit int default 50)
 returns setof public.notification_outbox language plpgsql volatile security definer set search_path = '' as $$
 begin
   perform private.enqueue_due_reminders();
+  perform private.skip_stale_outbox();
+  -- Esgotou as tentativas → falha definitiva
+  update public.notification_outbox set status = 'failed', processed_at = now(), last_error = coalesce(last_error, 'max attempts')
+  where status = 'processing' and attempts >= private.outbox_max_attempts() and claimed_at < now() - interval '2 minutes';
   return query
-  update public.notification_outbox o set status = 'processing', attempts = o.attempts + 1
+  update public.notification_outbox o set status = 'processing', attempts = o.attempts + 1, claimed_at = now()
   where o.id in (
     select id from public.notification_outbox
-    where status = 'pending' or (status = 'processing' and attempts < 4 and created_at < now() - interval '2 minutes')
+    where (status = 'pending' and next_attempt_at <= now())
+       -- execução anterior morreu no meio (timeout): reprocessa sem duplicar (ver notification_deliveries)
+       or (status = 'processing' and attempts < private.outbox_max_attempts() and claimed_at < now() - interval '2 minutes')
     order by created_at limit least(greatest(p_limit, 1), 200)
     for update skip locked)
   returning o.*;
@@ -255,6 +311,8 @@ begin
   left join public.notification_preferences np on np.user_id = s.user_id and np.barbershop_id = s.barbershop_id
   where s.barbershop_id = o.barbershop_id
     and s.auth is not null and s.p256dh is not null
+    -- já entregue a este dispositivo numa tentativa anterior → não reenviar
+    and not exists (select 1 from public.notification_deliveries d where d.outbox_id = o.id and d.subscription_id = s.id)
     and (o.target_user_id is null or s.user_id = o.target_user_id)
     and (o.exclude_user_id is null or s.user_id <> o.exclude_user_id or o.kind = 'reminder')
     -- usuário ainda precisa ter acesso à barbearia (ex.: vínculo removido)
@@ -268,18 +326,46 @@ begin
       else true end;
 end $$;
 
+-- Finaliza uma tentativa.
+--   p_status = 'sent' | 'skipped' | 'failed' → estado final
+--   p_status = 'retry' → falha temporária: volta para 'pending' com backoff
+--                         (1, 4, 9, 16 min) ou 'failed' ao esgotar as tentativas.
 create or replace function public.dispatch_complete(p_outbox_id bigint, p_status text, p_sent int, p_error text default null)
-returns void language sql volatile security definer set search_path = '' as $$
-  update public.notification_outbox set status = p_status, sent_count = p_sent, last_error = left(p_error, 500), processed_at = now()
+returns text language plpgsql volatile security definer set search_path = '' as $$
+declare v_attempts int; v_final text;
+begin
+  if p_status not in ('sent', 'skipped', 'failed', 'retry', 'pending') then
+    raise exception 'INVALID_STATUS' using errcode = '22023'; end if;
+  select attempts into v_attempts from public.notification_outbox where id = p_outbox_id;
+  if not found then return null; end if;
+  if p_status in ('retry', 'pending') then
+    v_final := case when v_attempts >= private.outbox_max_attempts() then 'failed' else 'pending' end;
+  else
+    v_final := p_status;
+  end if;
+  update public.notification_outbox set
+    status = v_final,
+    sent_count = sent_count + greatest(coalesce(p_sent, 0), 0),
+    last_error = left(p_error, 500),
+    next_attempt_at = case when v_final = 'pending' then now() + make_interval(mins => greatest(v_attempts, 1) * greatest(v_attempts, 1)) else next_attempt_at end,
+    processed_at = case when v_final = 'pending' then null else now() end
   where id = p_outbox_id;
-$$;
+  return v_final;
+end $$;
 
-create or replace function public.dispatch_subscription_result(p_subscription_id uuid, p_ok boolean, p_gone boolean, p_error text default null)
+-- Resultado do envio para UM dispositivo.
+--   ok   → registra a entrega (idempotência) e zera falhas
+--   gone → HTTP 404/410: inscrição revogada/expirada → remove
+--   erro temporário → só incrementa falhas (a limpeza diária remove após 5)
+create or replace function public.dispatch_record_delivery(
+  p_outbox_id bigint, p_subscription_id uuid, p_ok boolean, p_gone boolean, p_error text default null)
 returns void language plpgsql volatile security definer set search_path = '' as $$
 begin
   if p_gone then
     delete from public.push_subscriptions where id = p_subscription_id;
   elsif p_ok then
+    insert into public.notification_deliveries (outbox_id, subscription_id) values (p_outbox_id, p_subscription_id)
+    on conflict do nothing;
     update public.push_subscriptions set last_success_at = now(), failure_count = 0, last_error = null where id = p_subscription_id;
   else
     update public.push_subscriptions set failure_count = failure_count + 1, last_error = left(p_error, 300) where id = p_subscription_id;
@@ -336,8 +422,10 @@ create or replace function private.run_notification_cycle()
 returns void language plpgsql security definer set search_path = '' as $$
 begin
   perform private.enqueue_due_reminders();
-  if exists (select 1 from public.notification_outbox where status = 'pending'
-             or (status = 'processing' and attempts < 4 and created_at < now() - interval '2 minutes')) then
+  perform private.skip_stale_outbox();
+  if exists (select 1 from public.notification_outbox
+             where (status = 'pending' and next_attempt_at <= now())
+                or (status = 'processing' and claimed_at < now() - interval '2 minutes')) then
     perform private.wake_dispatcher();
   end if;
 end $$;
@@ -354,7 +442,7 @@ begin
   get diagnostics v_rate = row_count;
   delete from public.notification_outbox where created_at < now() - interval '30 days';
   get diagnostics v_outbox = row_count;
-  update public.notification_outbox set status = 'failed', last_error = coalesce(last_error, 'max attempts')
-  where status = 'processing' and attempts >= 4;
+  update public.notification_outbox set status = 'failed', processed_at = now(), last_error = coalesce(last_error, 'max attempts')
+  where status = 'processing' and attempts >= private.outbox_max_attempts() and claimed_at < now() - interval '1 hour';
   return jsonb_build_object('subscriptions_removed', v_subs, 'rate_events_removed', v_rate, 'outbox_removed', v_outbox);
 end $$;
