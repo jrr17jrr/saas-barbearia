@@ -12,6 +12,16 @@
       "permanent": true
     },
     {
+      "source": "/configurações/:path*",
+      "destination": "/configuracoes/",
+      "permanent": true
+    },
+    {
+      "source": "/configurações",
+      "destination": "/configuracoes/",
+      "permanent": true
+    },
+    {
       "source": "/link/:slug",
       "destination": "/link-agendamento/?barbearia=:slug",
       "permanent": false
