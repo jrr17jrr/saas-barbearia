@@ -55,3 +55,10 @@ test('vercel.json mantém a barra final quando as páginas usam assets relativos
   assert.ok(relative.length > 0);
   assert.equal(cfg.trailingSlash, true, `páginas com assets relativos: ${relative.map(d => d.name).join(', ')}`);
 });
+
+test('links curtos /link/:slug e /chat/:slug funcionam com e sem barra final', async () => {
+  const { readFileSync } = await import('node:fs');
+  const cfg = JSON.parse(readFileSync(new URL('../vercel.json', import.meta.url), 'utf8'));
+  const sources = cfg.redirects.map(r => r.source);
+  for (const s of ['/link/:slug', '/link/:slug/', '/chat/:slug', '/chat/:slug/']) assert.ok(sources.includes(s), `falta redirect ${s}`);
+});

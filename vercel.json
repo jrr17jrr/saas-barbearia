@@ -17,7 +17,17 @@
       "permanent": false
     },
     {
+      "source": "/link/:slug/",
+      "destination": "/link-agendamento/?barbearia=:slug",
+      "permanent": false
+    },
+    {
       "source": "/chat/:slug",
+      "destination": "/chatbot/?barbearia=:slug",
+      "permanent": false
+    },
+    {
+      "source": "/chat/:slug/",
       "destination": "/chatbot/?barbearia=:slug",
       "permanent": false
     }
