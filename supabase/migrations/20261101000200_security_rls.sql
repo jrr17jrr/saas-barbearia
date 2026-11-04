@@ -18,11 +18,11 @@ begin
     execute format('alter table public.barbershop_members drop constraint %I', r.conname);
   end loop;
   update public.barbershop_members set role = case
-      when role is null then 'owner'
-      when lower(role) in ('owner','dono','proprietario') then 'owner'
-      when lower(role) in ('manager','admin','gerente') then 'manager'
-      else 'barber' end
-    where role is null or role not in ('owner','manager','barber');
+      when role is null then 'owner'::public.member_role
+      when lower(role::text) in ('owner','dono','proprietario') then 'owner'::public.member_role
+      when lower(role::text) in ('manager','admin','gerente') then 'manager'::public.member_role
+      else 'barber'::public.member_role end
+    where role is null or role::text not in ('owner','manager','barber');
   alter table public.barbershop_members add constraint barbershop_members_role_check
     check (role in ('owner','manager','barber'));
 end $$;
