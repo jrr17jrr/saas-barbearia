@@ -5,14 +5,15 @@
   "type": "module",
   "description": "BarberSaaS — SaaS multiempresa para barbearias (site estático + Supabase)",
   "scripts": {
-    "test": "node --test --test-concurrency=1 tests/db.test.js tests/ui.test.js tests/e2e.test.js",
-    "test:db": "node --test tests/db.test.js",
+    "test": "node --test --test-concurrency=1 tests/db.test.js tests/db-upgrade.test.js tests/ui.test.js tests/e2e.test.js",
+    "test:db": "node --test --test-concurrency=1 tests/db.test.js tests/db-upgrade.test.js",
     "test:e2e": "node --test --test-concurrency=1 tests/e2e.test.js",
     "lint": "node scripts/lint.js",
     "build": "node scripts/build.js",
     "check": "npm run lint && npm test && npm run build",
     "serve": "node scripts/serve.js",
-    "icons": "node scripts/make-icons.js"
+    "icons": "node scripts/make-icons.js",
+    "smoke": "node scripts/smoke-prod.js"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.3.0",

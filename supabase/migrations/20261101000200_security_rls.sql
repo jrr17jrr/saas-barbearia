@@ -4,6 +4,30 @@
 -- =====================================================================
 
 -- ---------------------------------------------------------------------
+-- Cargos (re-assegurado aqui porque a 01 pode ter sido aplicada no banco
+-- real numa versão compatível com o legado 'barber'). Idempotente.
+-- ---------------------------------------------------------------------
+do $$
+declare r record;
+begin
+  for r in
+    select c.conname from pg_constraint c
+    where c.conrelid = 'public.barbershop_members'::regclass and c.contype = 'c'
+      and pg_get_constraintdef(c.oid) ilike '%role%'
+  loop
+    execute format('alter table public.barbershop_members drop constraint %I', r.conname);
+  end loop;
+  update public.barbershop_members set role = case
+      when role is null then 'owner'
+      when lower(role) in ('owner','dono','proprietario') then 'owner'
+      when lower(role) in ('manager','admin','gerente') then 'manager'
+      else 'barber' end
+    where role is null or role not in ('owner','manager','barber');
+  alter table public.barbershop_members add constraint barbershop_members_role_check
+    check (role in ('owner','manager','barber'));
+end $$;
+
+-- ---------------------------------------------------------------------
 -- Helpers de autorização (schema private não é exposto pela API)
 -- ---------------------------------------------------------------------
 create or replace function private.is_platform_admin()
@@ -11,11 +35,15 @@ returns boolean language sql stable security definer set search_path = '' as $$
   select exists (select 1 from public.platform_admins where user_id = (select auth.uid()));
 $$;
 
+-- Membro com acesso EFETIVO: barbearia suspensa/cancelada bloqueia o tenant no
+-- banco (não só no front). O admin DEV continua acessando via is_platform_admin().
 create or replace function private.is_shop_member(p_shop uuid)
 returns boolean language sql stable security definer set search_path = '' as $$
   select exists (
-    select 1 from public.barbershop_members
-    where barbershop_id = p_shop and user_id = (select auth.uid())
+    select 1 from public.barbershop_members m
+    join public.barbershops b on b.id = m.barbershop_id
+    where m.barbershop_id = p_shop and m.user_id = (select auth.uid())
+      and b.status in ('active', 'demo')
   );
 $$;
 
@@ -27,7 +55,9 @@ $$;
 -- Barbearias às quais o usuário atual tem acesso (para policies com IN, mais rápidas)
 create or replace function private.my_shop_ids()
 returns setof uuid language sql stable security definer set search_path = '' as $$
-  select barbershop_id from public.barbershop_members where user_id = (select auth.uid());
+  select m.barbershop_id from public.barbershop_members m
+  join public.barbershops b on b.id = m.barbershop_id
+  where m.user_id = (select auth.uid()) and b.status in ('active', 'demo');
 $$;
 
 -- Wrapper público (já existia). Só informa o status do PRÓPRIO usuário.
@@ -89,6 +119,20 @@ create trigger barbersaas_on_auth_user
 insert into public.profiles (id, email)
 select u.id, u.email from auth.users u
 on conflict (id) do nothing;
+
+-- SEGURANÇA: entre a aplicação da 01 e desta 02, platform_admins ficou sem RLS e com
+-- INSERT liberado para anon/authenticated no banco real (confirmado em 2026-11-03).
+-- Como ela passa a ser a fonte de autorização AGORA, removemos qualquer linha que não
+-- seja o admin DEV legítimo (e-mail confirmado). Novos admins: inserir via SQL depois.
+do $$
+begin
+  if not exists (select 1 from pg_policies where schemaname = 'public' and tablename = 'platform_admins'
+                 and policyname = 'platform_admins_select') then
+    delete from public.platform_admins pa
+    where not exists (select 1 from auth.users u where u.id = pa.user_id
+                      and lower(u.email) = 'visionariodev@gmail.com' and u.email_confirmed_at is not null);
+  end if;
+end $$;
 
 insert into public.platform_admins (user_id, note)
 select u.id, 'Administrador DEV da plataforma' from auth.users u

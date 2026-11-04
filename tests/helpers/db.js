@@ -12,7 +12,7 @@ export function migrationFiles() {
   return readdirSync(migrationsDir).filter(f => f.endsWith('.sql')).sort();
 }
 
-export async function createDb({ applyTwice = false } = {}) {
+export async function createDb({ applyTwice = false, afterFile = null } = {}) {
   const db = new PGlite({ extensions: { btree_gist } });
   await db.exec(readFileSync(join(root, 'tests', 'sql', 'supabase_stub.sql'), 'utf8'));
   await db.exec(readFileSync(join(root, 'tests', 'sql', 'baseline_existing.sql'), 'utf8'));
@@ -21,6 +21,7 @@ export async function createDb({ applyTwice = false } = {}) {
     for (const f of migrationFiles()) {
       try {
         await db.exec(readFileSync(join(migrationsDir, f), 'utf8'));
+        if (afterFile && i === 0) await afterFile(f, db);
       } catch (e) {
         e.message = `[${f} run ${i + 1}] ${e.message}`;
         throw e;

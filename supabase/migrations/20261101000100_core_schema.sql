@@ -133,9 +133,28 @@ create table if not exists public.barbershop_members (
   role text not null default 'owner',
   created_at timestamptz not null default now()
 );
-update public.barbershop_members set role = 'owner' where role is null or role not in ('owner','manager','staff');
-alter table public.barbershop_members drop constraint if exists barbershop_members_role_check;
-alter table public.barbershop_members add constraint barbershop_members_role_check check (role in ('owner','manager','staff'));
+-- Cargos canônicos: owner | manager | barber (o schema de produção já usava 'barber').
+-- Remove QUALQUER check antigo sobre role (nome desconhecido no legado) antes de normalizar.
+do $$
+declare r record;
+begin
+  for r in
+    select c.conname from pg_constraint c
+    where c.conrelid = 'public.barbershop_members'::regclass and c.contype = 'c'
+      and pg_get_constraintdef(c.oid) ilike '%role%'
+  loop
+    execute format('alter table public.barbershop_members drop constraint %I', r.conname);
+  end loop;
+end $$;
+-- Normalização sem escalar privilégio: valor desconhecido vira o cargo MENOS privilegiado.
+update public.barbershop_members set role = case
+    when role is null then 'owner'                        -- default legado era 'owner'
+    when lower(role) in ('owner','dono','proprietario') then 'owner'
+    when lower(role) in ('manager','admin','gerente') then 'manager'
+    else 'barber' end
+  where role is null or role not in ('owner','manager','barber');
+alter table public.barbershop_members alter column role set default 'owner';
+alter table public.barbershop_members add constraint barbershop_members_role_check check (role in ('owner','manager','barber'));
 create unique index if not exists barbershop_members_unique on public.barbershop_members(barbershop_id, user_id);
 create index if not exists barbershop_members_user_idx on public.barbershop_members(user_id);
 

@@ -59,6 +59,12 @@ declare v_slug text; v_base text; v_i int := 1; v_row public.barbershops; v_user
 begin
   perform private.require_admin();
   if length(trim(coalesce(p_name, ''))) < 2 then raise exception 'INVALID_NAME' using errcode = '22023'; end if;
+  p_plan := coalesce(nullif(trim(p_plan), ''), 'complete');
+  p_status := coalesce(nullif(trim(p_status), ''), 'active');
+  if p_plan not in ('chatbot', 'site', 'complete') then raise exception 'INVALID_PLAN' using errcode = '22023'; end if;
+  if p_status not in ('active', 'demo', 'suspended', 'cancelled') then raise exception 'INVALID_STATUS' using errcode = '22023'; end if;
+  if nullif(trim(coalesce(p_owner_email, '')), '') is not null and trim(p_owner_email) !~ '^[^@[:space:]]+@[^@[:space:]]+\.[^@[:space:]]+$' then
+    raise exception 'INVALID_EMAIL' using errcode = '22023'; end if;
   v_base := private.slugify(coalesce(nullif(trim(p_slug), ''), p_name));
   if length(v_base) < 3 then v_base := v_base || '-barbearia'; end if;
   v_slug := v_base;
@@ -69,7 +75,7 @@ begin
   insert into public.barbershops (name, slug, owner_name, owner_email, whatsapp, phone, address, plan, status, is_demo)
   values (trim(p_name), v_slug, nullif(trim(coalesce(p_owner_name, '')), ''), nullif(lower(trim(coalesce(p_owner_email, ''))), ''),
     private.normalize_phone(p_whatsapp), private.normalize_phone(p_whatsapp), nullif(trim(coalesce(p_address, '')), ''),
-    coalesce(p_plan, 'complete'), coalesce(p_status, 'active'), p_status = 'demo')
+    p_plan, p_status, p_status = 'demo')
   returning * into v_row;
 
   -- Se o proprietário já tem conta confirmada, vincula imediatamente
@@ -98,8 +104,13 @@ begin
   perform private.require_admin();
   select * into v_old from public.barbershops where id = p_id for update;
   if not found then raise exception 'NOT_FOUND' using errcode = 'P0002'; end if;
+  if p_patch ? 'plan' and coalesce(p_patch ->> 'plan', '') not in ('chatbot', 'site', 'complete') then
+    raise exception 'INVALID_PLAN' using errcode = '22023'; end if;
+  if p_patch ? 'status' and coalesce(p_patch ->> 'status', '') not in ('active', 'demo', 'suspended', 'cancelled') then
+    raise exception 'INVALID_STATUS' using errcode = '22023'; end if;
   if p_patch ? 'slug' then
     v_slug := private.slugify(p_patch ->> 'slug');
+    if length(v_slug) < 3 then raise exception 'INVALID_SLUG' using errcode = '22023'; end if;
     if exists (select 1 from public.barbershops where slug = v_slug and id <> p_id) then
       raise exception 'SLUG_TAKEN' using errcode = '23505'; end if;
   end if;
@@ -188,9 +199,11 @@ create or replace function public.shop_context(p_shop_id uuid)
 returns jsonb language plpgsql stable security definer set search_path = '' as $$
 declare v public.barbershops; v_role text;
 begin
-  if not private.can_access_shop(p_shop_id) then raise exception 'FORBIDDEN' using errcode = '42501'; end if;
-  select * into v from public.barbershops where id = p_shop_id;
+  -- Membro de barbearia suspensa/cancelada recebe o contexto (para o painel explicar
+  -- a situação), mas NÃO acessa nenhum dado: as policies usam private.my_shop_ids().
   select role into v_role from public.barbershop_members where barbershop_id = p_shop_id and user_id = (select auth.uid());
+  if v_role is null and not private.is_platform_admin() then raise exception 'FORBIDDEN' using errcode = '42501'; end if;
+  select * into v from public.barbershops where id = p_shop_id;
   return jsonb_build_object('id', v.id, 'name', v.name, 'slug', v.slug, 'status', v.status, 'plan', v.plan,
     'timezone', v.timezone, 'role', coalesce(v_role, 'support'),
     'support_mode', v_role is null,

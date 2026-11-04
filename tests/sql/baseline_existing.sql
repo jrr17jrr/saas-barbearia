@@ -54,3 +54,9 @@ insert into public.business_hours (barbershop_id, weekday, is_open, opens_at, cl
   select '94dd3644-3fc6-4399-adc3-0e0aebd175eb', d, d <> 0, case when d <> 0 then '09:00'::time end, case when d <> 0 then '19:00'::time end from generate_series(0,6) d;
 insert into public.barbershop_settings (barbershop_id, chatbot_name, chatbot_greeting) values
   ('11b26428-f91f-4fc4-b910-31788c443ca1', 'Vision Bot', 'Olá!'), ('94dd3644-3fc6-4399-adc3-0e0aebd175eb', 'Bot', 'Olá!');
+-- Produção usa o cargo legado 'barber' (conflito 'staff' x 'barber' encontrado no db push de 2026-11-02)
+alter table public.barbershop_members add constraint barbershop_members_role_legacy_check check (role in ('owner','admin','barber'));
+insert into auth.users (id, email, email_confirmed_at) values
+  ('00000000-0000-4000-8000-0000000000b1', 'barbeiro.legado@example.com', now());
+insert into public.barbershop_members (barbershop_id, user_id, role) values
+  ('11b26428-f91f-4fc4-b910-31788c443ca1', '00000000-0000-4000-8000-0000000000b1', 'barber');
