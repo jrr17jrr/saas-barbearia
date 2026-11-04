@@ -7,6 +7,12 @@
 - **Edge Functions** (`supabase/functions/`): `push-dispatch`, `push`, `admin-users`.
 - **Cron (pg_cron)**: envio de notificações/lembretes e manutenção diária.
 
+> Pendências reais de produção (com comandos exatos): [`docs/PENDENCIAS-PRODUCAO.md`](PENDENCIAS-PRODUCAO.md).
+> Verificação somente leitura do ambiente real: `npm run smoke`.
+
+## Cargos (`barbershop_members.role`)
+`owner` | `manager` | `barber`. O schema de produção já usava `barber`; a migration 01 (reforçada na 02) remove qualquer check antigo de cargo e normaliza valores legados **sem escalar privilégio** (`admin`→`manager`, `staff`/desconhecido→`barber`). Barbearia `suspended`/`cancelled` bloqueia o acesso aos dados no banco (RLS via `private.my_shop_ids()`); o painel continua recebendo `shop_context` para mostrar o aviso.
+
 ## Passo a passo de implantação (uma vez)
 
 ### 1. Login no Supabase CLI e vínculo do projeto
@@ -88,6 +94,14 @@ Desativar:
 select cron.unschedule('barbersaas-notifications');
 select cron.unschedule('barbersaas-maintenance');
 ```
+
+## Fila de notificações (outbox)
+- Cada evento tem `dedupe_key` única (novo agendamento, cancelamento, remarcação com novo horário, lembrete por horário).
+- Entregas por dispositivo ficam em `notification_deliveries`: um retry **nunca** reenvia para quem já recebeu.
+- Falha temporária (5xx/429/rede) → `pending` com backoff de 1, 4, 9 e 16 min; após 5 tentativas → `failed`.
+- HTTP 404/410 do serviço de push → inscrição removida na hora. Falhas temporárias só somam `failure_count` (a limpeza diária remove com 5+).
+- Lembrete de agendamento cancelado/remarcado e aviso de agendamento já cancelado são marcados `skipped` antes do envio.
+- Diagnóstico (admin DEV): `select kind, status, attempts, last_error from notification_outbox order by id desc limit 20;`
 
 ## Notificações push — requisitos reais
 - **Android (Chrome/Edge/Samsung Internet)**: funciona no navegador e no app instalado.
